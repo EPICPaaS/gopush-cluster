@@ -49,13 +49,25 @@ func StartHTTP() {
 	// old
 	httpAdminServeMux.HandleFunc("/admin/push", PushPrivate)
 	httpAdminServeMux.HandleFunc("/admin/msg/clean", DelPrivate)
+
+	// 应用消息服务
+	httpAppServeMux := http.NewServeMux()
+
+	httpAppServeMux.HandleFunc("/app/client/device/login", ClientDeviceLogin)
+
 	for _, bind := range Conf.HttpBind {
 		glog.Infof("start http listen addr:\"%s\"", bind)
 		go httpListen(httpServeMux, bind)
 	}
+
 	for _, bind := range Conf.AdminBind {
 		glog.Infof("start admin http listen addr:\"%s\"", bind)
 		go httpListen(httpAdminServeMux, bind)
+	}
+
+	for _, bind := range Conf.AdminBind {
+		glog.Infof("start app http listen addr:\"%s\"", bind)
+		go httpListen(httpAppServeMux, bind)
 	}
 }
 
