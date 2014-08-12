@@ -19,9 +19,9 @@ package main
 import (
 	"errors"
 	"fmt"
-	"github.com/Terry-Mao/gopush-cluster/hash"
-	"github.com/Terry-Mao/gopush-cluster/hlist"
-	myrpc "github.com/Terry-Mao/gopush-cluster/rpc"
+	"github.com/EPICPaaS/gopush-cluster/hash"
+	"github.com/EPICPaaS/gopush-cluster/hlist"
+	myrpc "github.com/EPICPaaS/gopush-cluster/rpc"
 	"github.com/golang/glog"
 	"net"
 	"sync"

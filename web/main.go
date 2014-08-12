@@ -18,9 +18,9 @@ package main
 
 import (
 	"flag"
-	"github.com/Terry-Mao/gopush-cluster/perf"
-	"github.com/Terry-Mao/gopush-cluster/process"
-	"github.com/Terry-Mao/gopush-cluster/ver"
+	"github.com/EPICPaaS/gopush-cluster/perf"
+	"github.com/EPICPaaS/gopush-cluster/process"
+	"github.com/EPICPaaS/gopush-cluster/ver"
 	"github.com/golang/glog"
 	"runtime"
 	"time"

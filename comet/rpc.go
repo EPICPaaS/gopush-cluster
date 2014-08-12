@@ -18,8 +18,8 @@ package main
 
 import (
 	"errors"
-	"github.com/Terry-Mao/gopush-cluster/hash"
-	myrpc "github.com/Terry-Mao/gopush-cluster/rpc"
+	"github.com/EPICPaaS/gopush-cluster/hash"
+	myrpc "github.com/EPICPaaS/gopush-cluster/rpc"
 	"github.com/golang/glog"
 	"net"
 	"net/rpc"

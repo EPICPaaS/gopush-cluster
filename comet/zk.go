@@ -22,8 +22,8 @@ package main
 
 import (
 	"fmt"
-	"github.com/Terry-Mao/gopush-cluster/rpc"
-	myzk "github.com/Terry-Mao/gopush-cluster/zk"
+	"github.com/EPICPaaS/gopush-cluster/rpc"
+	myzk "github.com/EPICPaaS/gopush-cluster/zk"
 	"github.com/golang/glog"
 	"github.com/samuel/go-zookeeper/zk"
 	"path"

@@ -19,7 +19,7 @@ package main
 import (
 	"errors"
 	"flag"
-	"github.com/Terry-Mao/goconf"
+	"github.com/EPICPaaS/goconf"
 	"github.com/golang/glog"
 )
 
@@ -45,7 +45,7 @@ func InitConfig(file string) (*Config, error) {
 	cf := &Config{
 		// base
 		Addr:      "localhost:6969",
-		Key:       "Terry-Mao",
+		Key:       "EPICPaaS",
 		Heartbeat: 30,
 	}
 	c := goconf.New()

@@ -18,7 +18,7 @@ package main
 
 import (
 	"fmt"
-	"github.com/Terry-Mao/gopush-cluster/router"
+	"github.com/EPICPaaS/gopush-cluster/router"
 	"github.com/golang/glog"
 )
 
