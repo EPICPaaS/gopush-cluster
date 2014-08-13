@@ -21,7 +21,7 @@ func (device) Login(w http.ResponseWriter, r *http.Request) {
 
 	body := ""
 	res := map[string]interface{}{"ret": OK, "ErrMsg": ""}
-	defer retPWrite(w, r, res, &body, time.Now())
+	defer RetPWrite(w, r, res, &body, time.Now())
 
 	// param
 	bodyBytes, err := ioutil.ReadAll(r.Body)

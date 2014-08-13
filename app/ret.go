@@ -16,7 +16,7 @@ const (
 )
 
 // retWrite marshal the result and write to client(get).
-func retWrite(w http.ResponseWriter, r *http.Request, res map[string]interface{}, callback string, start time.Time) {
+func RetWrite(w http.ResponseWriter, r *http.Request, res map[string]interface{}, callback string, start time.Time) {
 	data, err := json.Marshal(res)
 	if err != nil {
 		glog.Errorf("json.Marshal(\"%v\") error(%v)", res, err)
@@ -39,7 +39,7 @@ func retWrite(w http.ResponseWriter, r *http.Request, res map[string]interface{}
 }
 
 // retPWrite marshal the result and write to client(post).
-func retPWrite(w http.ResponseWriter, r *http.Request, res map[string]interface{}, body *string, start time.Time) {
+func RetPWrite(w http.ResponseWriter, r *http.Request, res map[string]interface{}, body *string, start time.Time) {
 	data, err := json.Marshal(res)
 	if err != nil {
 		glog.Errorf("json.Marshal(\"%v\") error(%v)", res, err)

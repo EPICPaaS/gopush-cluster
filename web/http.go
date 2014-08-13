@@ -17,8 +17,6 @@
 package main
 
 import (
-	"encoding/json"
-	"fmt"
 	"github.com/EPICPaaS/gopush-cluster/app"
 	"github.com/golang/glog"
 	"net"
@@ -65,7 +63,7 @@ func StartHTTP() {
 		go httpListen(httpAdminServeMux, bind)
 	}
 
-	for _, bind := range Conf.AdminBind {
+	for _, bind := range Conf.AppBind {
 		glog.Infof("start app http listen addr:\"%s\"", bind)
 		go httpListen(httpAppServeMux, bind)
 	}

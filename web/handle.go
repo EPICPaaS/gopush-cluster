@@ -17,6 +17,7 @@
 package main
 
 import (
+	"github.com/EPICPaaS/gopush-cluster/app"
 	myrpc "github.com/EPICPaaS/gopush-cluster/rpc"
 	"github.com/golang/glog"
 	"net/http"
@@ -34,27 +35,27 @@ func GetServer0(w http.ResponseWriter, r *http.Request) {
 	key := params.Get("key")
 	callback := params.Get("callback")
 	protoStr := params.Get("proto")
-	res := map[string]interface{}{"ret": OK, "msg": "ok"}
-	defer retWrite(w, r, res, callback, time.Now())
+	res := map[string]interface{}{"ret": app.OK, "msg": "ok"}
+	defer app.RetWrite(w, r, res, callback, time.Now())
 	if key == "" {
-		res["ret"] = ParamErr
+		res["ret"] = app.ParamErr
 		return
 	}
 	proto, err := strconv.Atoi(protoStr)
 	if err != nil {
 		glog.Errorf("strconv.Atoi(\"%s\") error(%v)", protoStr, err)
-		res["ret"] = ParamErr
+		res["ret"] = app.ParamErr
 		return
 	}
 	// Match a push-server with the value computed through ketama algorithm
 	node := myrpc.GetComet(key)
 	if node == nil {
-		res["ret"] = NotFoundServer
+		res["ret"] = app.NotFoundServer
 		return
 	}
 	addr := node.Addr[proto]
 	if addr == nil || len(addr) == 0 {
-		res["ret"] = NotFoundServer
+		res["ret"] = app.NotFoundServer
 		return
 	}
 	server := ""
@@ -81,15 +82,15 @@ func GetOfflineMsg0(w http.ResponseWriter, r *http.Request) {
 	key := params.Get("key")
 	midStr := params.Get("mid")
 	callback := params.Get("callback")
-	res := map[string]interface{}{"ret": OK, "msg": "ok"}
-	defer retWrite(w, r, res, callback, time.Now())
+	res := map[string]interface{}{"ret": app.OK, "msg": "ok"}
+	defer app.RetWrite(w, r, res, callback, time.Now())
 	if key == "" || midStr == "" {
-		res["ret"] = ParamErr
+		res["ret"] = app.ParamErr
 		return
 	}
 	mid, err := strconv.ParseInt(midStr, 10, 64)
 	if err != nil {
-		res["ret"] = ParamErr
+		res["ret"] = app.ParamErr
 		glog.Errorf("strconv.ParseInt(\"%s\", 10, 64) error(%v)", midStr, err)
 		return
 	}
@@ -98,12 +99,12 @@ func GetOfflineMsg0(w http.ResponseWriter, r *http.Request) {
 	args := &myrpc.MessageGetPrivateArgs{MsgId: mid, Key: key}
 	client := myrpc.MessageRPC.Get()
 	if client == nil {
-		res["ret"] = InternalErr
+		res["ret"] = app.InternalErr
 		return
 	}
 	if err := client.Call(myrpc.MessageServiceGetPrivate, args, reply); err != nil {
 		glog.Errorf("myrpc.MessageRPC.Call(\"%s\", \"%v\", reply) error(%v)", myrpc.MessageServiceGetPrivate, args, err)
-		res["ret"] = InternalErr
+		res["ret"] = app.InternalErr
 		return
 	}
 	omsgs := []string{}
@@ -111,7 +112,7 @@ func GetOfflineMsg0(w http.ResponseWriter, r *http.Request) {
 	for _, msg := range reply.Msgs {
 		omsg, err := msg.OldBytes()
 		if err != nil {
-			res["ret"] = InternalErr
+			res["ret"] = app.InternalErr
 			return
 		}
 		omsgs = append(omsgs, string(omsg))
@@ -133,9 +134,9 @@ func GetTime0(w http.ResponseWriter, r *http.Request) {
 	}
 	params := r.URL.Query()
 	callback := params.Get("callback")
-	res := map[string]interface{}{"ret": OK, "msg": "ok"}
+	res := map[string]interface{}{"ret": app.OK, "msg": "ok"}
 	now := time.Now()
-	defer retWrite(w, r, res, callback, now)
+	defer app.RetWrite(w, r, res, callback, now)
 	res["data"] = map[string]interface{}{"timeid": now.UnixNano() / 100}
 	return
 }
