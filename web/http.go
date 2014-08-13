@@ -19,6 +19,7 @@ package main
 import (
 	"encoding/json"
 	"fmt"
+	"github.com/EPICPaaS/gopush-cluster/app"
 	"github.com/golang/glog"
 	"net"
 	"net/http"
@@ -52,8 +53,7 @@ func StartHTTP() {
 
 	// 应用消息服务
 	httpAppServeMux := http.NewServeMux()
-
-	httpAppServeMux.HandleFunc("/app/client/device/login", ClientDeviceLogin)
+	httpAppServeMux.HandleFunc("/app/client/device/login", app.Device.Login)
 
 	for _, bind := range Conf.HttpBind {
 		glog.Infof("start http listen addr:\"%s\"", bind)
@@ -82,43 +82,4 @@ func httpListen(mux *http.ServeMux, bind string) {
 		glog.Errorf("server.Serve() error(%v)", err)
 		panic(err)
 	}
-}
-
-// retWrite marshal the result and write to client(get).
-func retWrite(w http.ResponseWriter, r *http.Request, res map[string]interface{}, callback string, start time.Time) {
-	data, err := json.Marshal(res)
-	if err != nil {
-		glog.Errorf("json.Marshal(\"%v\") error(%v)", res, err)
-		return
-	}
-	dataStr := ""
-	if callback == "" {
-		// Normal json
-		dataStr = string(data)
-	} else {
-		// Jsonp
-		dataStr = fmt.Sprintf("%s(%s)", callback, string(data))
-	}
-	if n, err := w.Write([]byte(dataStr)); err != nil {
-		glog.Errorf("w.Write(\"%s\") error(%v)", dataStr, err)
-	} else {
-		glog.V(1).Infof("w.Write(\"%s\") write %d bytes", dataStr, n)
-	}
-	glog.Infof("req: \"%s\", res:\"%s\", ip:\"%s\", time:\"%fs\"", r.URL.String(), dataStr, r.RemoteAddr, time.Now().Sub(start).Seconds())
-}
-
-// retPWrite marshal the result and write to client(post).
-func retPWrite(w http.ResponseWriter, r *http.Request, res map[string]interface{}, body *string, start time.Time) {
-	data, err := json.Marshal(res)
-	if err != nil {
-		glog.Errorf("json.Marshal(\"%v\") error(%v)", res, err)
-		return
-	}
-	dataStr := string(data)
-	if n, err := w.Write([]byte(dataStr)); err != nil {
-		glog.Errorf("w.Write(\"%s\") error(%v)", dataStr, err)
-	} else {
-		glog.V(1).Infof("w.Write(\"%s\") write %d bytes", dataStr, n)
-	}
-	glog.Infof("req: \"%s\", post: \"%s\", res:\"%s\", ip:\"%s\", time:\"%fs\"", r.URL.String(), *body, dataStr, r.RemoteAddr, time.Now().Sub(start).Seconds())
 }

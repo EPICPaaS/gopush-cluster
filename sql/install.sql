@@ -1,5 +1,9 @@
 delimiter $$
 
+CREATE DATABASE `appmsgsrv` /*!40100 DEFAULT CHARACTER SET utf8 */$$
+
+delimiter $$
+
 CREATE TABLE `client` (
   `id` bigint(20) NOT NULL,
   `user_id` bigint(20) DEFAULT NULL,
@@ -54,6 +58,7 @@ CREATE TABLE `user` (
   `rand` varchar(45) DEFAULT NULL,
   `password` varchar(32) DEFAULT NULL,
   `key` varchar(32) DEFAULT NULL,
+  `level` int(11) DEFAULT NULL,
   `created` datetime DEFAULT NULL,
   `updated` datetime DEFAULT NULL,
   PRIMARY KEY (`id`)

@@ -64,8 +64,12 @@ func main() {
 		glog.Errorf("process.Init() error(%v)", err)
 		return
 	}
+
+	defer MySQL.Close()
+
 	// init signals, block wait signals
 	signalCH := InitSignal()
 	HandleSignal(signalCH)
+
 	glog.Info("web stop")
 }
