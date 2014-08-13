@@ -18,6 +18,7 @@ package main
 
 import (
 	"flag"
+	"github.com/EPICPaaS/gopush-cluster/app"
 	"github.com/EPICPaaS/gopush-cluster/perf"
 	"github.com/EPICPaaS/gopush-cluster/process"
 	"github.com/EPICPaaS/gopush-cluster/ver"
@@ -65,7 +66,7 @@ func main() {
 		return
 	}
 
-	defer MySQL.Close()
+	defer app.MySQL.Close()
 
 	// init signals, block wait signals
 	signalCH := InitSignal()
