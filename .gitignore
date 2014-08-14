@@ -22,3 +22,5 @@ _testmain.go
 *.exe
 
 /web/web
+/message/message
+/comet/comet

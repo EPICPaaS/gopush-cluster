@@ -18,7 +18,7 @@ package main
 
 import (
 	"flag"
-	"github.com/EPICPaaS/goconf"
+	"github.com/Terry-Mao/goconf"
 	"github.com/golang/glog"
 	"runtime"
 	"time"

@@ -56,6 +56,7 @@ func StartHTTP() {
 	// 应用消息服务
 	appAppServeMux := http.NewServeMux()
 	appAppServeMux.HandleFunc("/app/client/device/login", app.Device.Login)
+	appAppServeMux.HandleFunc("/app/client/device/push", app.Device.Push)
 
 	for _, bind := range Conf.HttpBind {
 		glog.Infof("start http listen addr:\"%s\"", bind)

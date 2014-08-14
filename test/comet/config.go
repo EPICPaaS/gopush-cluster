@@ -19,7 +19,7 @@ package main
 import (
 	"errors"
 	"flag"
-	"github.com/EPICPaaS/goconf"
+	"github.com/Terry-Mao/goconf"
 	"github.com/golang/glog"
 )
 
