@@ -28,6 +28,10 @@ const (
 	httpReadTimeout = 30 //seconds
 )
 
+func init() {
+	glog.Info("init http")
+}
+
 // StartHTTP start listen http.
 func StartHTTP() {
 	// external
@@ -50,8 +54,8 @@ func StartHTTP() {
 	httpAdminServeMux.HandleFunc("/admin/msg/clean", DelPrivate)
 
 	// 应用消息服务
-	httpAppServeMux := http.NewServeMux()
-	httpAppServeMux.HandleFunc("/app/client/device/login", app.Device.Login)
+	appAppServeMux := http.NewServeMux()
+	appAppServeMux.HandleFunc("/app/client/device/login", app.Device.Login)
 
 	for _, bind := range Conf.HttpBind {
 		glog.Infof("start http listen addr:\"%s\"", bind)
@@ -65,7 +69,7 @@ func StartHTTP() {
 
 	for _, bind := range Conf.AppBind {
 		glog.Infof("start app http listen addr:\"%s\"", bind)
-		go httpListen(httpAppServeMux, bind)
+		go httpListen(appAppServeMux, bind)
 	}
 }
 

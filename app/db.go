@@ -9,8 +9,9 @@ import (
 
 var MySQL *sql.DB
 
-func init() {
-	// TODO: 配置 DB
+func InitDB() {
+	glog.Info("Connecting DB....")
+
 	var err error
 	MySQL, err = sql.Open("mysql", "root:123456@tcp(10.180.120.63:3308)/appmsgsrv")
 
@@ -23,4 +24,8 @@ func init() {
 	MySQL.SetMaxOpenConns(500)
 
 	glog.Info("DB connected")
+}
+
+func CloseDB() {
+	MySQL.Close()
 }

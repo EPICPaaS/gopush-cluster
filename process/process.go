@@ -70,9 +70,11 @@ func Init(userGroup, dir, pidFile string) error {
 		gid, _ = strconv.Atoi(ui.Gid)
 	}
 	if err := syscall.Setgid(gid); err != nil {
+		fmt.Println(1)
 		return err
 	}
 	if err := syscall.Setuid(uid); err != nil {
+		fmt.Println(2)
 		return err
 	}
 	return nil

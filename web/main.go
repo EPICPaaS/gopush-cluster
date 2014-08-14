@@ -56,6 +56,10 @@ func main() {
 			return
 		}
 	}
+
+	app.InitDB()
+	defer app.CloseDB()
+
 	// start http listen.
 	StartHTTP()
 	// init process
