@@ -53,3 +53,9 @@ func RetPWrite(w http.ResponseWriter, r *http.Request, res map[string]interface{
 	}
 	glog.Infof("req: \"%s\", post: \"%s\", res:\"%s\", ip:\"%s\", time:\"%fs\"", r.URL.String(), *body, dataStr, r.RemoteAddr, time.Now().Sub(start).Seconds())
 }
+
+func RetPWriteJSON(w http.ResponseWriter, r *http.Request, res map[string]interface{}, body *string, start time.Time) {
+	w.Header().Set("Content-Type", "application/json")
+
+	RetPWrite(w, r, res, body, start)
+}
