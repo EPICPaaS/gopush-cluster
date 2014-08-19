@@ -13,7 +13,8 @@ func InitDB() {
 	glog.Info("Connecting DB....")
 
 	var err error
-	MySQL, err = sql.Open("mysql", "root:123456@tcp(10.180.120.63:3308)/appmsgsrv")
+	// TODO: 数据库连接配置
+	MySQL, err = sql.Open("mysql", Conf.AppDBURL)
 
 	if nil != err {
 		glog.Error(err)
