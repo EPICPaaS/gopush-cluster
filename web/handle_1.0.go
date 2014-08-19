@@ -60,7 +60,7 @@ func GetServer(w http.ResponseWriter, r *http.Request) {
 	}
 	server := ""
 	// Select the best ip
-	if Conf.Router != "" {
+	if app.Conf.Router != "" {
 		server = routerCN.SelectBest(r.RemoteAddr, addr)
 		glog.V(1).Infof("select the best ip:\"%s\" match with remoteAddr:\"%s\" , from ip list:\"%v\"", server, r.RemoteAddr, addr)
 	}

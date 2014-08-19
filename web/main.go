@@ -33,12 +33,12 @@ func main() {
 	flag.Parse()
 	glog.Infof("web ver: \"%s\" start", ver.Version)
 	defer glog.Flush()
-	if err = InitConfig(); err != nil {
+	if err = app.InitConfig(); err != nil {
 		glog.Errorf("InitConfig() error(%v)", err)
 		return
 	}
 	// Set max routine
-	runtime.GOMAXPROCS(Conf.MaxProc)
+	runtime.GOMAXPROCS(app.Conf.MaxProc)
 	// init zookeeper
 	zkConn, err := InitZK()
 	if err != nil {
@@ -48,9 +48,9 @@ func main() {
 	// if process exit, close zk
 	defer zkConn.Close()
 	// start pprof http
-	perf.Init(Conf.PprofBind)
+	perf.Init(app.Conf.PprofBind)
 	// Init network router
-	if Conf.Router != "" {
+	if app.Conf.Router != "" {
 		if err := InitRouter(); err != nil {
 			glog.Errorf("InitRouter() failed(%v)", err)
 			return
@@ -65,7 +65,7 @@ func main() {
 	// init process
 	// sleep one second, let the listen start
 	time.Sleep(time.Second)
-	if err = process.Init(Conf.User, Conf.Dir, Conf.PidFile); err != nil {
+	if err = process.Init(app.Conf.User, app.Conf.Dir, app.Conf.PidFile); err != nil {
 		glog.Errorf("process.Init() error(%v)", err)
 		return
 	}

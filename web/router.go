@@ -18,6 +18,7 @@ package main
 
 import (
 	"fmt"
+	"github.com/EPICPaaS/gopush-cluster/app"
 	"github.com/EPICPaaS/gopush-cluster/router"
 	"github.com/golang/glog"
 )
@@ -32,9 +33,9 @@ var (
 
 // Init network router
 func InitRouter() error {
-	switch Conf.Router {
+	switch app.Conf.Router {
 	case NetworkRouterCN:
-		r, err := router.InitCN(Conf.QQWryPath)
+		r, err := router.InitCN(app.Conf.QQWryPath)
 		if err != nil {
 			glog.Errorf("init china network router failed(%v)", err)
 			return err
@@ -42,7 +43,7 @@ func InitRouter() error {
 		routerCN = r
 	default:
 		// TODO:support more countries` network routers
-		return fmt.Errorf("unknown network router:\"%s\", please check your configuration", Conf.Router)
+		return fmt.Errorf("unknown network router:\"%s\", please check your configuration", app.Conf.Router)
 	}
 
 	return nil

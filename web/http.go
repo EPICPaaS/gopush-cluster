@@ -58,17 +58,17 @@ func StartHTTP() {
 	appAppServeMux.HandleFunc("/app/client/device/login", app.Device.Login)
 	appAppServeMux.HandleFunc("/app/client/device/push", app.Device.Push)
 
-	for _, bind := range Conf.HttpBind {
+	for _, bind := range app.Conf.HttpBind {
 		glog.Infof("start http listen addr:\"%s\"", bind)
 		go httpListen(httpServeMux, bind)
 	}
 
-	for _, bind := range Conf.AdminBind {
+	for _, bind := range app.Conf.AdminBind {
 		glog.Infof("start admin http listen addr:\"%s\"", bind)
 		go httpListen(httpAdminServeMux, bind)
 	}
 
-	for _, bind := range Conf.AppBind {
+	for _, bind := range app.Conf.AppBind {
 		glog.Infof("start app http listen addr:\"%s\"", bind)
 		go httpListen(appAppServeMux, bind)
 	}

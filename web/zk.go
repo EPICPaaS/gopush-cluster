@@ -17,6 +17,7 @@
 package main
 
 import (
+	"github.com/EPICPaaS/gopush-cluster/app"
 	myrpc "github.com/EPICPaaS/gopush-cluster/rpc"
 	myzk "github.com/EPICPaaS/gopush-cluster/zk"
 	"github.com/golang/glog"
@@ -24,12 +25,12 @@ import (
 )
 
 func InitZK() (*zk.Conn, error) {
-	conn, err := myzk.Connect(Conf.ZookeeperAddr, Conf.ZookeeperTimeout)
+	conn, err := myzk.Connect(app.Conf.ZookeeperAddr, app.Conf.ZookeeperTimeout)
 	if err != nil {
 		glog.Errorf("zk.Connect() error(%v)", err)
 		return nil, err
 	}
-	myrpc.InitComet(conn, Conf.ZookeeperCometPath, Conf.RPCRetry, Conf.RPCPing)
-	myrpc.InitMessage(conn, Conf.ZookeeperMessagePath, Conf.RPCRetry, Conf.RPCPing)
+	myrpc.InitComet(conn, app.Conf.ZookeeperCometPath, app.Conf.RPCRetry, app.Conf.RPCPing)
+	myrpc.InitMessage(conn, app.Conf.ZookeeperMessagePath, app.Conf.RPCRetry, app.Conf.RPCPing)
 	return conn, nil
 }
