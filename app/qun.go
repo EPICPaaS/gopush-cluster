@@ -1,8 +1,11 @@
 package app
 
 import (
+	"encoding/json"
 	"github.com/EPICPaaS/go-uuid/uuid"
 	"github.com/golang/glog"
+	"io/ioutil"
+	"net/http"
 	"time"
 )
 
@@ -79,7 +82,10 @@ func (device) CreateQun(w http.ResponseWriter, r *http.Request) {
 	memberList := args["memberList"].(map[string]interface{})
 	qunUsers := []QunUser{}
 	for _, member := range memberList {
-		memberId := member[uid].(string)
+		// FIXME: memberId := member["uid"].(string)
+
+		glog.Info(member)
+		memberId := ""
 
 		qunUser := QunUser{Id: uuid.New(), QunId: qid, UserId: memberId, Sort: 0, Role: 0, Created: now, Updated: now}
 
@@ -121,7 +127,7 @@ func createQun(qun *Qun, users *[]QunUser) bool {
 	defer stmt.Close()
 
 	// 创建群记录
-	_, err := stmt.Exec(qun.Id, qun.CreatorId, qun.Name, qun.Description, qun.MaxMember, qun.Avatar, qun.Created, qun.Updated)
+	_, err = stmt.Exec(qun.Id, qun.CreatorId, qun.Name, qun.Description, qun.MaxMember, qun.Avatar, qun.Created, qun.Updated)
 	if err != nil {
 		glog.Error(err)
 
