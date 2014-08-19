@@ -10,7 +10,10 @@ import (
 	"time"
 )
 
-// 客户端设备发送消息.
+// 客户端设备推送消息.
+// 1. 单推
+// 2. 群推
+// 3. 组织机构推
 func (device) Push(w http.ResponseWriter, r *http.Request) {
 	if r.Method != "POST" {
 		http.Error(w, "Method Not Allowed", 405)
