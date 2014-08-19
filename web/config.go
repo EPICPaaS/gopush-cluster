@@ -38,6 +38,7 @@ type Config struct {
 	HttpBind             []string      `goconf:"base:http.bind:,"`
 	AdminBind            []string      `goconf:"base:admin.bind:,"`
 	AppBind              []string      `goconf:"base:app.bind:,"`
+	AppDBURL             string        `goconf:"base:app.dbURL"`
 	MaxProc              int           `goconf:"base:maxproc"`
 	PprofBind            []string      `goconf:"base:pprof.bind:,"`
 	User                 string        `goconf:"base:user"`

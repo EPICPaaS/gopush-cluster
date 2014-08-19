@@ -14,7 +14,7 @@ type device struct{}
 
 var Device device
 
-// 客户端设备登录，返回 key 和身份 token
+// 客户端设备登录，返回 key 和身份 token.
 func (device) Login(w http.ResponseWriter, r *http.Request) {
 	if r.Method != "POST" {
 		http.Error(w, "Method Not Allowed", 405)
@@ -61,7 +61,7 @@ func (device) Login(w http.ResponseWriter, r *http.Request) {
 	return
 }
 
-// 客户端设备发送消息
+// 客户端设备发送消息.
 func (device) Push(w http.ResponseWriter, r *http.Request) {
 	if r.Method != "POST" {
 		http.Error(w, "Method Not Allowed", 405)
@@ -105,10 +105,9 @@ func (device) Push(w http.ResponseWriter, r *http.Request) {
 	}
 
 	toUserName := msg["toUserName"].(string)
-
 	toUserIds := getToUserIds(toUserName)
 
-	// 群组发送时接收端看到的发送人应该是XXX群组
+	// 多推时接收端看到的发送人应该是XXX群/组织机构
 	if len(toUserIds) > 1 {
 		msg["fromUserName"] = toUserName
 	}
@@ -120,6 +119,7 @@ func (device) Push(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	// 推送分发
 	for _, uid := range toUserIds {
 		// uid 就是 gopush 的 key
 		key := uid
@@ -153,12 +153,16 @@ func (device) Push(w http.ResponseWriter, r *http.Request) {
 	return
 }
 
+// 根据 toUserName 获得最终推送的 uid 集.
 func getToUserIds(toUserName string) []string {
-	// TODO: 如果 toUserName 是群组，则进行群组->用户解析
+	ret := []string{""}
 
-	ret := []string{"toUserId1"}
-	if strings.Contains(toUserName, "@room") {
-		ret = append(ret, "toUserId2")
+	if strings.HasSuffix(toUserName, "@qun") { // 群推
+		// TODO: 群推
+	} else if strings.HasSuffix(toUserName, "@org") { // 组织机构推
+		// TODO: 组织机构推
+	} else { // 单推
+		ret = append(ret, toUserName)
 	}
 
 	return ret
