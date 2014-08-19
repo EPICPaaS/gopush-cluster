@@ -14,53 +14,6 @@ type device struct{}
 
 var Device device
 
-// 客户端设备登录，返回 key 和身份 token.
-func (device) Login(w http.ResponseWriter, r *http.Request) {
-	if r.Method != "POST" {
-		http.Error(w, "Method Not Allowed", 405)
-		return
-	}
-
-	baseRes := map[string]interface{}{"ret": OK, "errMsg": ""}
-	body := ""
-	res := map[string]interface{}{"baseResponse": baseRes}
-	defer RetPWriteJSON(w, r, res, &body, time.Now())
-
-	bodyBytes, err := ioutil.ReadAll(r.Body)
-	if err != nil {
-		res["ret"] = ParamErr
-		glog.Errorf("ioutil.ReadAll() failed (%s)", err.Error())
-		return
-	}
-	body = string(bodyBytes)
-
-	var args map[string]interface{}
-
-	if err := json.Unmarshal(bodyBytes, &args); err != nil {
-		baseRes["errMsg"] = err.Error()
-		baseRes["ret"] = ParamErr
-		return
-	}
-
-	baseReq := args["baseRequest"].(map[string]interface{})
-
-	uid := baseReq["uid"]
-	deviceId := baseReq["deviceID"]
-	userName := args["userName"]
-	password := args["password"]
-
-	glog.V(1).Infof("uid [%d], deviceId [%s], userName [%s], password [%s]",
-		uid, deviceId, userName, password)
-
-	// TODO: 登录逻辑
-
-	// 返回 key、token
-	res["uid"] = "ukey"
-	res["token"] = "utoken"
-
-	return
-}
-
 // 客户端设备发送消息.
 func (device) Push(w http.ResponseWriter, r *http.Request) {
 	if r.Method != "POST" {
