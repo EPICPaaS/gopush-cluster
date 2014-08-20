@@ -57,6 +57,8 @@ func (device) Push(w http.ResponseWriter, r *http.Request) {
 	}
 
 	toUserName := msg["toUserName"].(string)
+
+	// 获取推送目标用户 id 集
 	toUserIds := getToUserIds(toUserName)
 
 	// 多推时接收端看到的发送人应该是 XXX 群/组织机构
@@ -78,14 +80,16 @@ func (device) Push(w http.ResponseWriter, r *http.Request) {
 
 		node := myrpc.GetComet(key)
 		if node == nil || node.CometRPC == nil {
+			glog.Errorf("Get comet node failed [key=%s]", key)
 			baseRes["ret"] = NotFoundServer
-			return
+
+			// 推送分发过程中失败不立即返回，继续下一个推送，下同
 		}
 
 		client := node.CometRPC.Get()
 		if client == nil {
+			glog.Errorf("Get comet node RPC client failed [key=%s]", key)
 			baseRes["ret"] = NotFoundServer
-			return
 		}
 
 		pushArgs := &myrpc.CometPushPrivateArgs{Msg: json.RawMessage(msgBytes), Expire: uint(expire), Key: key}
@@ -93,8 +97,6 @@ func (device) Push(w http.ResponseWriter, r *http.Request) {
 		if err := client.Call(myrpc.CometServicePushPrivate, pushArgs, &ret); err != nil {
 			glog.Errorf("client.Call(\"%s\", \"%v\", &ret) error(%v)", myrpc.CometServicePushPrivate, args, err)
 			baseRes["ret"] = InternalErr
-
-			// 失败不立即返回，继续下一个推送
 		}
 	}
 
