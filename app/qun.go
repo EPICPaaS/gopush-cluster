@@ -10,17 +10,17 @@ import (
 )
 
 const (
-	// 群插入 SQL
+	// 群插入 SQL.
 	InsertQunSQL = "INSERT INTO `qun` (`id`, `creator_id`, `name`, `description`, `max_member`, `avatar`, `created`, `updated`) VALUES " +
 		"(?, ?, ?, ?, ?, ?, ?, ?)"
-	// 群-用户关联插入 SQL
+	// 群-用户关联插入 SQL.
 	InsertQunUserSQL = "INSERT INTO `qun_user` (`id`, `qun_id`, `user_id`, `sort`, `role`, `created`, `updated`) VALUES " +
 		"(?, ?, ?, ?, ?, ?, ?)"
-	// 根据群 id 查询群内用户 id 集
+	// 根据群 id 查询群内用户 id 集.
 	SelectQunUserSQL = "SELECT `user_id` FROM `qun_user` WHERE `qun_id` = ?"
 )
 
-// 群结构
+// 群结构.
 type Qun struct {
 	Id          string
 	CreatorId   string
@@ -32,7 +32,7 @@ type Qun struct {
 	Updated     time.Time
 }
 
-// 群-用户关联结构
+// 群-用户关联结构.
 type QunUser struct {
 	Id      string
 	QunId   string
@@ -43,7 +43,7 @@ type QunUser struct {
 	Updated time.Time
 }
 
-// 创建群
+// 创建群.
 func (device) CreateQun(w http.ResponseWriter, r *http.Request) {
 	if r.Method != "POST" {
 		http.Error(w, "Method Not Allowed", 405)
@@ -196,6 +196,7 @@ func createQun(qun *Qun, qunUsers []QunUser) bool {
 	return true
 }
 
+// 在数据库中查询群内用户 id 集.
 func getUsersInQun(qunId string) ([]string, error) {
 	ret := []string{}
 

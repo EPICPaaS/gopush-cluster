@@ -54,6 +54,7 @@ func RetPWrite(w http.ResponseWriter, r *http.Request, res map[string]interface{
 	glog.Infof("req: \"%s\", post: \"%s\", res:\"%s\", ip:\"%s\", time:\"%fs\"", r.URL.String(), *body, dataStr, r.RemoteAddr, time.Now().Sub(start).Seconds())
 }
 
+// 带 Content-Type=application/json 头 写 JSON 数据，为了保持原有 gopush-cluster 的兼容性，所以新加了这个函数.
 func RetPWriteJSON(w http.ResponseWriter, r *http.Request, res map[string]interface{}, body *string, start time.Time) {
 	w.Header().Set("Content-Type", "application/json")
 
