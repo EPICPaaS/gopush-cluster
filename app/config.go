@@ -29,6 +29,12 @@ var (
 	confFile string
 )
 
+const (
+	TENANT_SUFFIX = "@tenant"
+	ORG_SUFFIX    = "@org"
+	QUN_SUFFIX    = "@qun"
+)
+
 // InitConfig initialize config file path
 func init() {
 	flag.StringVar(&confFile, "c", "./web.conf", " set web config file path")
