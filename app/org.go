@@ -6,6 +6,7 @@ import (
 	"github.com/golang/glog"
 	"io/ioutil"
 	"net/http"
+	"sort"
 	"time"
 )
 
@@ -15,7 +16,7 @@ type member struct {
 	NickName    string
 	HeadImgUrl  string
 	MemberCount int
-	MemberList  []member
+	MemberList  []*member
 	PYInitial   string
 	PYQuanPin   string
 	Status      string
@@ -69,6 +70,29 @@ func (device) Login(w http.ResponseWriter, r *http.Request) {
 	res["token"] = "utoken"
 
 	return
+}
+
+type members []*member
+
+type BySort struct {
+	memberList members
+}
+
+func (s BySort) Len() int { return len(s.memberList) }
+func (s BySort) Swap(i, j int) {
+	s.memberList[i], s.memberList[j] = s.memberList[j], s.memberList[i]
+}
+
+func (s BySort) Less(i, j int) bool {
+	return s.memberList[i].sort < s.memberList[j].sort
+}
+
+func sortMemberList(lst []*member) {
+	sort.Sort(BySort{lst})
+
+	for _, rec := range lst {
+		sort.Sort(BySort{rec.MemberList})
+	}
 }
 
 // 客户端设备登录，返回 key 和身份 token
@@ -138,7 +162,6 @@ func (device) GetOrgInfo(w http.ResponseWriter, r *http.Request) {
 	for row.Next() {
 		rec := new(member)
 		row.Scan(&rec.Uid, &rec.NickName, &rec.parentId, &rec.sort)
-		glog.Errorf("%v", *rec)
 		data.PushBack(rec)
 	}
 
@@ -149,5 +172,64 @@ func (device) GetOrgInfo(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	unitMap := map[string]*member{}
+	for ele := data.Front(); ele != nil; ele = ele.Next() {
+		rec := ele.Value.(*member)
+		unitMap[rec.Uid] = rec
+	}
+
+	rootList := []*member{}
+	for _, val := range unitMap {
+		if val.parentId == "" {
+			rootList = append(rootList, val)
+		} else {
+			parent := unitMap[val.parentId]
+			parent.MemberList = append(parent.MemberList, val)
+			parent.MemberCount++
+		}
+	}
+
+	res["OgnizationMemberList"] = rootList
+	sortMemberList(rootList)
+	glog.Errorf("%v", rootList)
+
+	smt, err = MySQL.Prepare("select id, name,  parent_id, sort from unit where id in (select unit_id from unit_user where user_id=?)")
+	if smt != nil {
+		defer smt.Close()
+	} else {
+		baseRes["ErrMsg"] = err.Error()
+		baseRes["Ret"] = InternalErr
+		return
+	}
+
+	if err != nil {
+		baseRes["ErrMsg"] = err.Error()
+		baseRes["Ret"] = InternalErr
+		return
+	}
+
+	row, err = smt.Query("testuser")
+	if row != nil {
+		defer row.Close()
+	} else {
+		baseRes["ErrMsg"] = err.Error()
+		baseRes["Ret"] = InternalErr
+		return
+	}
+
+	data = list.New()
+	for row.Next() {
+		rec := new(member)
+		row.Scan(&rec.Uid, &rec.NickName, &rec.parentId, &rec.sort)
+		res["UserOgnization"] = rec
+		break
+	}
+
+	res["StarMemberCount"] = 2
+	starMembers := make(members, 2)
+
+	starMembers[0] = &member{Uid: "11222", UserName: "111222@qq.com", NickName: "hehe"}
+	starMembers[1] = &member{Uid: "11222", UserName: "labc@163.com", NickName: "haha"}
+	res["StarMemberList"] = starMembers
 	return
 }
