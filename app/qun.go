@@ -11,11 +11,13 @@ import (
 
 const (
 	// 群插入 SQL
-	QunInsertSQL = "INSERT INTO `qun` (`id`, `name`, `description`, `max_member`, `avatar`, `created`, `updated`) VALUES " +
+	InsertQunSQL = "INSERT INTO `qun` (`id`, `name`, `description`, `max_member`, `avatar`, `created`, `updated`) VALUES " +
 		"(?, ?, ?, ?, ?, ?, ?)"
 	// 群-用户关联插入 SQL
-	QunUserInsertSQL = "INSERT INTO `qun_user` (`id`, `qun_id`, `user_id`, `sort`, `role`, `created`, `updated`) VALUES " +
+	InsertQunUserSQL = "INSERT INTO `qun_user` (`id`, `qun_id`, `user_id`, `sort`, `role`, `created`, `updated`) VALUES " +
 		"(?, ?, ?, ?, ?, ?, ?)"
+	// 根据群 id 查询群内用户 id 集
+	SelectQunUserSQL = "SELECT `user_id` FROM `qun_user` WHERE `qun_id` = ?"
 )
 
 // 群结构
@@ -100,6 +102,7 @@ func (device) CreateQun(w http.ResponseWriter, r *http.Request) {
 	return
 }
 
+// 数据库中插入群记录、群-用户关联记录.
 func createQun(qun *Qun, users *[]QunUser) bool {
 	tx, err := MySQL.Begin()
 
@@ -109,22 +112,8 @@ func createQun(qun *Qun, users *[]QunUser) bool {
 		return false
 	}
 
-	stmt, err := tx.Prepare(QunInsertSQL)
-
-	if err != nil {
-		glog.Error(err)
-
-		if err := tx.Rollback(); err != nil {
-			glog.Error(err)
-		}
-
-		return false
-	}
-
-	defer stmt.Close()
-
 	// 创建群记录
-	_, err = stmt.Exec(qun.Id, qun.CreatorId, qun.Name, qun.Description, qun.MaxMember, qun.Avatar, qun.Created, qun.Updated)
+	_, err = tx.Exec(InsertQunSQL, qun.Id, qun.CreatorId, qun.Name, qun.Description, qun.MaxMember, qun.Avatar, qun.Created, qun.Updated)
 	if err != nil {
 		glog.Error(err)
 
@@ -136,6 +125,19 @@ func createQun(qun *Qun, users *[]QunUser) bool {
 	}
 
 	// 创建群成员关联
+	for _, qunUser := range users {
+		_, err = tx.Exec(InsertQunUserSQL, qunUser.Id, qunUser.QunId, qunUser.UserId, qunUser.Sort, qunUser.Role, qunUser.Created, qunUser.Updated)
+
+		if err != nil {
+			glog.Error(err)
+
+			if err := tx.Rollback(); err != nil {
+				glog.Error(err)
+			}
+
+			return false
+		}
+	}
 
 	if err := tx.Commit(); err != nil {
 		glog.Error(err)
@@ -144,4 +146,26 @@ func createQun(qun *Qun, users *[]QunUser) bool {
 	}
 
 	return true
+}
+
+func getUsersInQun(qunId string) []string {
+	rows, err := db.Query(SelectQunUserSQL, qunId)
+	if err != nil {
+		glog.Error(err)
+	}
+	defer rows.Close()
+
+	ret := []string{}
+	for rows.Next() {
+		var name string
+		if err := rows.Scan(&name); err != nil {
+			glog.Error(err)
+		}
+
+		ret = append(ret, name)
+	}
+
+	if err := rows.Err(); err != nil {
+		glog.Error(err)
+	}
 }
