@@ -57,7 +57,7 @@ func (device) CreateQun(w http.ResponseWriter, r *http.Request) {
 
 	bodyBytes, err := ioutil.ReadAll(r.Body)
 	if err != nil {
-		baseRes["ret"] = ParamErr
+		baseRes.Ret = ParamErr
 		glog.Errorf("ioutil.ReadAll() failed (%s)", err.Error())
 		return
 	}
@@ -66,8 +66,8 @@ func (device) CreateQun(w http.ResponseWriter, r *http.Request) {
 	var args map[string]interface{}
 
 	if err := json.Unmarshal(bodyBytes, &args); err != nil {
-		baseRes["errMsg"] = err.Error()
-		baseRes["ret"] = ParamErr
+		baseRes.ErrMsg = err.Error()
+		baseRes.Ret = ParamErr
 		return
 	}
 
@@ -85,7 +85,6 @@ func (device) CreateQun(w http.ResponseWriter, r *http.Request) {
 	qunUsers := []QunUser{}
 	for _, m := range memberList {
 		member := m.(map[string]interface{})
-
 		memberId := member["uid"].(string)
 
 		qunUser := QunUser{Id: uuid.New(), QunId: qid, UserId: memberId, Sort: 0, Role: 0, Created: now, Updated: now}
@@ -97,8 +96,8 @@ func (device) CreateQun(w http.ResponseWriter, r *http.Request) {
 		glog.Infof("Created Qun [id=%s]", qid)
 	} else {
 		glog.Error("Create Qun faild")
-		baseRes["errMsg"] = "Create Qun faild"
-		baseRes["ret"] = InternalErr
+		baseRes.ErrMsg = "Create Qun faild"
+		baseRes.Ret = InternalErr
 	}
 
 	res["ChatRoomName"] = qid
@@ -120,7 +119,7 @@ func (device) GetUsersInQun(w http.ResponseWriter, r *http.Request) {
 
 	bodyBytes, err := ioutil.ReadAll(r.Body)
 	if err != nil {
-		baseRes["ret"] = ParamErr
+		baseRes.Ret = ParamErr
 		glog.Errorf("ioutil.ReadAll() failed (%s)", err.Error())
 		return
 	}
@@ -129,8 +128,8 @@ func (device) GetUsersInQun(w http.ResponseWriter, r *http.Request) {
 	var args map[string]interface{}
 
 	if err := json.Unmarshal(bodyBytes, &args); err != nil {
-		baseRes["errMsg"] = err.Error()
-		baseRes["ret"] = ParamErr
+		baseRes.ErrMsg = err.Error()
+		baseRes.Ret = ParamErr
 		return
 	}
 
@@ -140,8 +139,8 @@ func (device) GetUsersInQun(w http.ResponseWriter, r *http.Request) {
 
 	members, err := getUsersInQun(qid)
 	if err != nil {
-		baseRes["errMsg"] = err.Error()
-		baseRes["ret"] = InternalErr
+		baseRes.ErrMsg = err.Error()
+		baseRes.Ret = InternalErr
 		return
 	}
 

@@ -17,8 +17,8 @@ const (
 
 // 响应基础结构.
 type baseResponse struct {
-	Ret    int `json:"ret"`
-	ErrMsg int `json:"errMsg"`
+	Ret    int    `json:"ret"`
+	ErrMsg string `json:"errMsg"`
 }
 
 // retWrite marshal the result and write to client(get).
