@@ -104,7 +104,7 @@ func (device) GetOrgInfo(w http.ResponseWriter, r *http.Request) {
 	baseRes := map[string]interface{}{"Ret": OK, "ErrMsg": ""}
 	body := ""
 	res := map[string]interface{}{"baseResponse": baseRes}
-	defer RetPWrite(w, r, res, &body, time.Now())
+	defer RetPWriteJSON(w, r, res, &body, time.Now())
 
 	//bodyBytes, err := ioutil.ReadAll(r.Body)
 	//if err != nil {
