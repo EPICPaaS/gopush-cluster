@@ -58,6 +58,7 @@ func StartHTTP() {
 	appAppServeMux.HandleFunc("/app/client/device/login", app.Device.Login)
 	appAppServeMux.HandleFunc("/app/client/device/push", app.Device.Push)
 	appAppServeMux.HandleFunc("/app/client/device/create-qun", app.Device.CreateQun)
+	appAppServeMux.HandleFunc("/app/client/device/get-qun-members", app.Device.GetUsersInQun)
 
 	for _, bind := range app.Conf.HttpBind {
 		glog.Infof("start http listen addr:\"%s\"", bind)

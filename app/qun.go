@@ -102,6 +102,44 @@ func (device) CreateQun(w http.ResponseWriter, r *http.Request) {
 	return
 }
 
+// 获取群成员.
+func (device) GetUsersInQun(w http.ResponseWriter, r *http.Request) {
+	if r.Method != "POST" {
+		http.Error(w, "Method Not Allowed", 405)
+		return
+	}
+
+	baseRes := map[string]interface{}{"ret": OK, "errMsg": ""}
+	body := ""
+	res := map[string]interface{}{"baseResponse": baseRes}
+	defer RetPWriteJSON(w, r, res, &body, time.Now())
+
+	bodyBytes, err := ioutil.ReadAll(r.Body)
+	if err != nil {
+		baseRes["ret"] = ParamErr
+		glog.Errorf("ioutil.ReadAll() failed (%s)", err.Error())
+		return
+	}
+	body = string(bodyBytes)
+
+	var args map[string]interface{}
+
+	if err := json.Unmarshal(bodyBytes, &args); err != nil {
+		baseRes["errMsg"] = err.Error()
+		baseRes["ret"] = ParamErr
+		return
+	}
+
+	// TODO: token 校验
+
+	qid := arts["qid"].(string)
+
+	members := getUsersInQun(qid)
+	baseRes["members"] = members
+
+	return
+}
+
 // 数据库中插入群记录、群-用户关联记录.
 func createQun(qun *Qun, qunUsers []QunUser) bool {
 	tx, err := MySQL.Begin()
