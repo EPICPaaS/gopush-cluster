@@ -136,10 +136,16 @@ func (device) GetUsersInQun(w http.ResponseWriter, r *http.Request) {
 
 	// TODO: token 校验
 
-	qid := arts["qid"].(string)
+	qid := args["qid"].(string)
 
-	members := getUsersInQun(qid)
-	baseRes["members"] = members
+	members, err := getUsersInQun(qid)
+	if err != nil {
+		baseRes["errMsg"] = err.Error()
+		baseRes["ret"] = InternalErr
+		return
+	}
+
+	res["members"] = members
 
 	return
 }
