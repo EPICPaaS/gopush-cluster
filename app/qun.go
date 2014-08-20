@@ -22,14 +22,14 @@ const (
 
 // 群结构.
 type Qun struct {
-	Id          string
-	CreatorId   string
-	Name        string
-	Description string
-	MaxMember   int
-	Avatar      string
-	Created     time.Time
-	Updated     time.Time
+	Id          string    `json:"id"`
+	CreatorId   string    `json:"creatorId"`
+	Name        string    `json:"name"`
+	Description string    `json:"description"`
+	MaxMember   int       `json:"maxMember"`
+	Avatar      string    `json:"avatar"`
+	Created     time.Time `json:"created"`
+	Updated     time.Time `json:"updated"`
 }
 
 // 群-用户关联结构.
@@ -50,7 +50,7 @@ func (device) CreateQun(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	baseRes := map[string]interface{}{"ret": OK, "errMsg": ""}
+	baseRes := baseResponse{OK, ""}
 	body := ""
 	res := map[string]interface{}{"baseResponse": baseRes}
 	defer RetPWriteJSON(w, r, res, &body, time.Now())
@@ -113,7 +113,7 @@ func (device) GetUsersInQun(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	baseRes := map[string]interface{}{"ret": OK, "errMsg": ""}
+	baseRes := baseResponse{OK, ""}
 	body := ""
 	res := map[string]interface{}{"baseResponse": baseRes}
 	defer RetPWriteJSON(w, r, res, &body, time.Now())
