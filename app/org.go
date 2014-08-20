@@ -11,18 +11,18 @@ import (
 )
 
 type member struct {
-	Uid         string
-	UserName    string
-	NickName    string
-	HeadImgUrl  string
-	MemberCount int
-	MemberList  []*member
-	PYInitial   string
-	PYQuanPin   string
-	Status      string
-	StarFriend  int
-	parentId    string
-	sort        int
+	Uid         string    `json:"uid"`
+	UserName    string    `json:"userName"`
+	NickName    string    `json:"nickName"`
+	HeadImgUrl  string    `json:"headImgUrl"`
+	MemberCount int       `json:"memberCount"`
+	MemberList  []*member `json:"memberList"`
+	PYInitial   string    `json:"pYInitial"`
+	PYQuanPin   string    `json:"pYQuanPin"`
+	Status      string    `json:"status"`
+	StarFriend  int       `json:"starFriend"`
+	parentId    string    `json:"parentId"`
+	sort        int       `json:"sort"`
 }
 
 // 客户端设备登录，返回 key 和身份 token.
@@ -101,7 +101,7 @@ func (device) GetOrgInfo(w http.ResponseWriter, r *http.Request) {
 	//	http.Error(w, "Method Not Allowed", 405)
 	//	return
 	//}
-	baseRes := map[string]interface{}{"Ret": OK, "ErrMsg": ""}
+	baseRes := map[string]interface{}{"ret": OK, "errMsg": ""}
 	body := ""
 	res := map[string]interface{}{"baseResponse": baseRes}
 	defer RetPWriteJSON(w, r, res, &body, time.Now())
@@ -138,7 +138,7 @@ func (device) GetOrgInfo(w http.ResponseWriter, r *http.Request) {
 	//res["Uid"] = "ukey"
 	//res["Token"] = "utoken"
 
-	smt, err := MySQL.Prepare("select id, name,  parent_id, sort from unit where tenant_id=?")
+	smt, err := MySQL.Prepare("select id, name,  parent_id, sort from org where tenant_id=?")
 	if smt != nil {
 		defer smt.Close()
 	} else {
@@ -146,8 +146,8 @@ func (device) GetOrgInfo(w http.ResponseWriter, r *http.Request) {
 	}
 
 	if err != nil {
-		baseRes["ErrMsg"] = err.Error()
-		baseRes["Ret"] = InternalErr
+		baseRes["errMsg"] = err.Error()
+		baseRes["ret"] = InternalErr
 		return
 	}
 
@@ -167,8 +167,8 @@ func (device) GetOrgInfo(w http.ResponseWriter, r *http.Request) {
 
 	err = row.Err()
 	if err != nil {
-		baseRes["ErrMsg"] = err.Error()
-		baseRes["Ret"] = InternalErr
+		baseRes["errMsg"] = err.Error()
+		baseRes["ret"] = InternalErr
 		return
 	}
 
@@ -189,22 +189,53 @@ func (device) GetOrgInfo(w http.ResponseWriter, r *http.Request) {
 		}
 	}
 
-	res["OgnizationMemberList"] = rootList
+	tenant := new(member)
+	res["ognizationMemberList"] = tenant
 	sortMemberList(rootList)
-	glog.Errorf("%v", rootList)
+	tenant.MemberList = rootList
 
-	smt, err = MySQL.Prepare("select id, name,  parent_id, sort from unit where id in (select unit_id from unit_user where user_id=?)")
+	smt, err = MySQL.Prepare("select id, code, name from tenant where id=?")
 	if smt != nil {
 		defer smt.Close()
 	} else {
-		baseRes["ErrMsg"] = err.Error()
-		baseRes["Ret"] = InternalErr
+		baseRes["errMsg"] = err.Error()
+		baseRes["ret"] = InternalErr
 		return
 	}
 
 	if err != nil {
-		baseRes["ErrMsg"] = err.Error()
-		baseRes["Ret"] = InternalErr
+		baseRes["errMsg"] = err.Error()
+		baseRes["ret"] = InternalErr
+		return
+	}
+
+	row, err = smt.Query("testTanantId")
+	if row != nil {
+		defer row.Close()
+	} else {
+		baseRes["errMsg"] = err.Error()
+		baseRes["ret"] = InternalErr
+		return
+	}
+
+	data = list.New()
+	for row.Next() {
+		row.Scan(&tenant.Uid, &tenant.UserName, &tenant.NickName)
+		break
+	}
+
+	smt, err = MySQL.Prepare("select org_id from org_user where user_id=?")
+	if smt != nil {
+		defer smt.Close()
+	} else {
+		baseRes["errMsg"] = err.Error()
+		baseRes["ret"] = InternalErr
+		return
+	}
+
+	if err != nil {
+		baseRes["errMsg"] = err.Error()
+		baseRes["ret"] = InternalErr
 		return
 	}
 
@@ -212,24 +243,24 @@ func (device) GetOrgInfo(w http.ResponseWriter, r *http.Request) {
 	if row != nil {
 		defer row.Close()
 	} else {
-		baseRes["ErrMsg"] = err.Error()
-		baseRes["Ret"] = InternalErr
+		baseRes["errMsg"] = err.Error()
+		baseRes["ret"] = InternalErr
 		return
 	}
 
 	data = list.New()
 	for row.Next() {
-		rec := new(member)
-		row.Scan(&rec.Uid, &rec.NickName, &rec.parentId, &rec.sort)
-		res["UserOgnization"] = rec
+		userOgnization := ""
+		row.Scan(&userOgnization)
+		res["userOgnization"] = userOgnization
 		break
 	}
 
-	res["StarMemberCount"] = 2
+	res["starMemberCount"] = 2
 	starMembers := make(members, 2)
 
 	starMembers[0] = &member{Uid: "11222", UserName: "111222@qq.com", NickName: "hehe"}
 	starMembers[1] = &member{Uid: "11222", UserName: "labc@163.com", NickName: "haha"}
-	res["StarMemberList"] = starMembers
+	res["starMemberList"] = starMembers
 	return
 }
