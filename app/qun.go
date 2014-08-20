@@ -89,7 +89,7 @@ func (device) CreateQun(w http.ResponseWriter, r *http.Request) {
 		qunUsers = append(qunUsers, qunUser)
 	}
 
-	if createQun(qun, qunUsers) {
+	if createQun(&qun, &qunUsers) {
 		glog.Infof("Created Qun [id=%s]", qid)
 	} else {
 		glog.Error("Create Qun faild")
