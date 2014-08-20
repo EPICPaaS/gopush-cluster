@@ -91,7 +91,7 @@ func (device) CreateQun(w http.ResponseWriter, r *http.Request) {
 		qunUsers = append(qunUsers, qunUser)
 	}
 
-	if createQun(&qun, &qunUsers) {
+	if createQun(&qun, qunUsers) {
 		glog.Infof("Created Qun [id=%s]", qid)
 	} else {
 		glog.Error("Create Qun faild")
@@ -103,7 +103,7 @@ func (device) CreateQun(w http.ResponseWriter, r *http.Request) {
 }
 
 // 数据库中插入群记录、群-用户关联记录.
-func createQun(qun *Qun, users *[]QunUser) bool {
+func createQun(qun *Qun, qunUsers []QunUser) bool {
 	tx, err := MySQL.Begin()
 
 	if err != nil {
@@ -125,7 +125,7 @@ func createQun(qun *Qun, users *[]QunUser) bool {
 	}
 
 	// 创建群成员关联
-	for _, qunUser := range users {
+	for _, qunUser := range qunUsers {
 		_, err = tx.Exec(InsertQunUserSQL, qunUser.Id, qunUser.QunId, qunUser.UserId, qunUser.Sort, qunUser.Role, qunUser.Created, qunUser.Updated)
 
 		if err != nil {
@@ -148,23 +148,22 @@ func createQun(qun *Qun, users *[]QunUser) bool {
 	return true
 }
 
-func getUsersInQun(qunId string) []string, error {
+func getUsersInQun(qunId string) ([]string, error) {
 	ret := []string{}
-	
-	rows, err := db.Query(SelectQunUserSQL, qunId)
+
+	rows, err := MySQL.Query(SelectQunUserSQL, qunId)
 	if err != nil {
 		glog.Error(err)
-		
+
 		return nil, err
 	}
 	defer rows.Close()
-
 
 	for rows.Next() {
 		var name string
 		if err := rows.Scan(&name); err != nil {
 			glog.Error(err)
-			
+
 			return nil, err
 		}
 
@@ -173,9 +172,9 @@ func getUsersInQun(qunId string) []string, error {
 
 	if err := rows.Err(); err != nil {
 		glog.Error(err)
-		
+
 		return nil, err
 	}
-	
+
 	return ret, nil
 }
