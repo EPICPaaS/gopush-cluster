@@ -79,13 +79,10 @@ func (device) CreateQun(w http.ResponseWriter, r *http.Request) {
 	qid := uuid.New() + "@qun"
 	qun := Qun{Id: qid, CreatorId: creatorId, Name: topic, Description: "", MaxMember: 100, Avatar: "", Created: now, Updated: now}
 
-	memberList := args["memberList"].(map[string]interface{})
+	memberList := args["memberList"].([]map[string]interface{})
 	qunUsers := []QunUser{}
 	for _, member := range memberList {
-		// FIXME: memberId := member["uid"].(string)
-
-		glog.Info(member)
-		memberId := ""
+		memberId := member["uid"].(string)
 
 		qunUser := QunUser{Id: uuid.New(), QunId: qid, UserId: memberId, Sort: 0, Role: 0, Created: now, Updated: now}
 
