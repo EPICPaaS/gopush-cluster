@@ -7,13 +7,14 @@ import (
 	"os"
 )
 
+// 数据库操作句柄
 var MySQL *sql.DB
 
+// 初始化数据库连接.
 func InitDB() {
 	glog.Info("Connecting DB....")
 
 	var err error
-	// TODO: 数据库连接配置
 	MySQL, err = sql.Open("mysql", Conf.AppDBURL)
 
 	if nil != err {
@@ -27,6 +28,7 @@ func InitDB() {
 	glog.Info("DB connected")
 }
 
+// 关闭数据库连接.
 func CloseDB() {
 	MySQL.Close()
 }

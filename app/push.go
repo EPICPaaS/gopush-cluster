@@ -10,7 +10,10 @@ import (
 	"time"
 )
 
-// 客户端设备发送消息.
+// 客户端设备推送消息.
+// 1. 单推
+// 2. 群推
+// 3. 组织机构推
 func (device) Push(w http.ResponseWriter, r *http.Request) {
 	if r.Method != "POST" {
 		http.Error(w, "Method Not Allowed", 405)
@@ -54,9 +57,11 @@ func (device) Push(w http.ResponseWriter, r *http.Request) {
 	}
 
 	toUserName := msg["toUserName"].(string)
+
+	// 获取推送目标用户 id 集
 	toUserIds := getToUserIds(toUserName)
 
-	// 多推时接收端看到的发送人应该是XXX群/组织机构
+	// 多推时接收端看到的发送人应该是 XXX 群/组织机构
 	if len(toUserIds) > 1 {
 		msg["fromUserName"] = toUserName
 	}
@@ -75,14 +80,16 @@ func (device) Push(w http.ResponseWriter, r *http.Request) {
 
 		node := myrpc.GetComet(key)
 		if node == nil || node.CometRPC == nil {
+			glog.Errorf("Get comet node failed [key=%s]", key)
 			baseRes["ret"] = NotFoundServer
-			return
+
+			// 推送分发过程中失败不立即返回，继续下一个推送，下同
 		}
 
 		client := node.CometRPC.Get()
 		if client == nil {
+			glog.Errorf("Get comet node RPC client failed [key=%s]", key)
 			baseRes["ret"] = NotFoundServer
-			return
 		}
 
 		pushArgs := &myrpc.CometPushPrivateArgs{Msg: json.RawMessage(msgBytes), Expire: uint(expire), Key: key}
@@ -90,8 +97,6 @@ func (device) Push(w http.ResponseWriter, r *http.Request) {
 		if err := client.Call(myrpc.CometServicePushPrivate, pushArgs, &ret); err != nil {
 			glog.Errorf("client.Call(\"%s\", \"%v\", &ret) error(%v)", myrpc.CometServicePushPrivate, args, err)
 			baseRes["ret"] = InternalErr
-
-			// 失败不立即返回，继续下一个推送
 		}
 	}
 
@@ -104,10 +109,15 @@ func (device) Push(w http.ResponseWriter, r *http.Request) {
 
 // 根据 toUserName 获得最终推送的 uid 集.
 func getToUserIds(toUserName string) []string {
-	ret := []string{""}
+	ret := []string{}
 
 	if strings.HasSuffix(toUserName, "@qun") { // 群推
-		// TODO: 群推
+		userIds, err := getUsersInQun(toUserName)
+		if nil != err {
+			return ret
+		}
+
+		return userIds
 	} else if strings.HasSuffix(toUserName, "@org") { // 组织机构推
 		// TODO: 组织机构推
 	} else { // 单推
