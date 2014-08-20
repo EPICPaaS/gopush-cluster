@@ -11,8 +11,8 @@ import (
 
 const (
 	// 群插入 SQL
-	InsertQunSQL = "INSERT INTO `qun` (`id`, `name`, `description`, `max_member`, `avatar`, `created`, `updated`) VALUES " +
-		"(?, ?, ?, ?, ?, ?, ?)"
+	InsertQunSQL = "INSERT INTO `qun` (`id`, `creator_id`, `name`, `description`, `max_member`, `avatar`, `created`, `updated`) VALUES " +
+		"(?, ?, ?, ?, ?, ?, ?, ?)"
 	// 群-用户关联插入 SQL
 	InsertQunUserSQL = "INSERT INTO `qun_user` (`id`, `qun_id`, `user_id`, `sort`, `role`, `created`, `updated`) VALUES " +
 		"(?, ?, ?, ?, ?, ?, ?)"
@@ -81,9 +81,11 @@ func (device) CreateQun(w http.ResponseWriter, r *http.Request) {
 	qid := uuid.New() + "@qun"
 	qun := Qun{Id: qid, CreatorId: creatorId, Name: topic, Description: "", MaxMember: 100, Avatar: "", Created: now, Updated: now}
 
-	memberList := args["memberList"].([]map[string]interface{})
+	memberList := args["memberList"].([]interface{})
 	qunUsers := []QunUser{}
-	for _, member := range memberList {
+	for _, m := range memberList {
+		member := m.(map[string]interface{})
+
 		memberId := member["uid"].(string)
 
 		qunUser := QunUser{Id: uuid.New(), QunId: qid, UserId: memberId, Sort: 0, Role: 0, Created: now, Updated: now}
@@ -95,6 +97,8 @@ func (device) CreateQun(w http.ResponseWriter, r *http.Request) {
 		glog.Infof("Created Qun [id=%s]", qid)
 	} else {
 		glog.Error("Create Qun faild")
+		baseRes["errMsg"] = "Create Qun faild"
+		baseRes["ret"] = InternalErr
 	}
 
 	res["ChatRoomName"] = qid
