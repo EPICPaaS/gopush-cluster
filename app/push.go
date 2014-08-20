@@ -107,10 +107,13 @@ func (device) Push(w http.ResponseWriter, r *http.Request) {
 
 // 根据 toUserName 获得最终推送的 uid 集.
 func getToUserIds(toUserName string) []string {
-	ret := []string{""}
-
 	if strings.HasSuffix(toUserName, "@qun") { // 群推
-		// TODO: 群推
+		userIds, _ := getUsersInQun(toUserName)
+		if nil != err {
+			return []string{}
+		}
+
+		return userIds
 	} else if strings.HasSuffix(toUserName, "@org") { // 组织机构推
 		// TODO: 组织机构推
 	} else { // 单推

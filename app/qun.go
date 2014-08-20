@@ -148,18 +148,24 @@ func createQun(qun *Qun, users *[]QunUser) bool {
 	return true
 }
 
-func getUsersInQun(qunId string) []string {
+func getUsersInQun(qunId string) []string, error {
+	ret := []string{}
+	
 	rows, err := db.Query(SelectQunUserSQL, qunId)
 	if err != nil {
 		glog.Error(err)
+		
+		return nil, err
 	}
 	defer rows.Close()
 
-	ret := []string{}
+
 	for rows.Next() {
 		var name string
 		if err := rows.Scan(&name); err != nil {
 			glog.Error(err)
+			
+			return nil, err
 		}
 
 		ret = append(ret, name)
@@ -167,5 +173,9 @@ func getUsersInQun(qunId string) []string {
 
 	if err := rows.Err(); err != nil {
 		glog.Error(err)
+		
+		return nil, err
 	}
+	
+	return ret, nil
 }
