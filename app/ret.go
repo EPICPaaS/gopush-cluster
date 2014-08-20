@@ -15,6 +15,12 @@ const (
 	InternalErr    = 65535
 )
 
+// 响应基础结构.
+type baseResponse struct {
+	Ret    int    `json:"ret"`
+	ErrMsg string `json:"errMsg"`
+}
+
 // retWrite marshal the result and write to client(get).
 func RetWrite(w http.ResponseWriter, r *http.Request, res map[string]interface{}, callback string, start time.Time) {
 	data, err := json.Marshal(res)
