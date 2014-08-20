@@ -59,7 +59,7 @@ func (device) Push(w http.ResponseWriter, r *http.Request) {
 	toUserName := msg["toUserName"].(string)
 	toUserIds := getToUserIds(toUserName)
 
-	// 多推时接收端看到的发送人应该是XXX群/组织机构
+	// 多推时接收端看到的发送人应该是 XXX 群/组织机构
 	if len(toUserIds) > 1 {
 		msg["fromUserName"] = toUserName
 	}
