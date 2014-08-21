@@ -95,6 +95,46 @@ func sortMemberList(lst []*member) {
 	}
 }
 
+func (device) GetUserListByTenantId(id string) members {
+	smt, err := MySQL.Prepare("select id, name,  parent_id, sort from org where tenant_id=?")
+	if smt != nil {
+		defer smt.Close()
+	} else {
+		return
+	}
+
+	if err != nil {
+		baseRes["errMsg"] = err.Error()
+		baseRes["ret"] = InternalErr
+		return
+	}
+
+	row, err := smt.Query("testTanantId")
+	if row != nil {
+		defer row.Close()
+	} else {
+		return
+	}
+	data := list.New()
+	for row.Next() {
+		rec := new(member)
+		row.Scan(&rec.Uid, &rec.NickName, &rec.parentId, &rec.sort)
+		rec.Uid = rec.Uid
+		rec.UserName = rec.Uid + ORG_SUFFIX
+		data.PushBack(rec)
+	}
+	err = row.Err()
+	if err != nil {
+		baseRes["errMsg"] = err.Error()
+		baseRes["ret"] = InternalErr
+		return
+	}
+}
+
+func (device) GetUserListByOrgId(id string) members {
+
+}
+
 // 客户端设备登录，返回 key 和身份 token
 func (device) GetOrgInfo(w http.ResponseWriter, r *http.Request) {
 	//if r.Method != "POST" {
@@ -157,14 +197,14 @@ func (device) GetOrgInfo(w http.ResponseWriter, r *http.Request) {
 	} else {
 		return
 	}
-
 	data := list.New()
 	for row.Next() {
 		rec := new(member)
 		row.Scan(&rec.Uid, &rec.NickName, &rec.parentId, &rec.sort)
+		rec.Uid = rec.Uid
+		rec.UserName = rec.Uid + ORG_SUFFIX
 		data.PushBack(rec)
 	}
-
 	err = row.Err()
 	if err != nil {
 		baseRes["errMsg"] = err.Error()
@@ -184,6 +224,9 @@ func (device) GetOrgInfo(w http.ResponseWriter, r *http.Request) {
 			rootList = append(rootList, val)
 		} else {
 			parent := unitMap[val.parentId]
+			if parent == nil {
+				continue
+			}
 			parent.MemberList = append(parent.MemberList, val)
 			parent.MemberCount++
 		}
@@ -193,7 +236,6 @@ func (device) GetOrgInfo(w http.ResponseWriter, r *http.Request) {
 	res["ognizationMemberList"] = tenant
 	sortMemberList(rootList)
 	tenant.MemberList = rootList
-
 	smt, err = MySQL.Prepare("select id, code, name from tenant where id=?")
 	if smt != nil {
 		defer smt.Close()
@@ -221,9 +263,9 @@ func (device) GetOrgInfo(w http.ResponseWriter, r *http.Request) {
 	data = list.New()
 	for row.Next() {
 		row.Scan(&tenant.Uid, &tenant.UserName, &tenant.NickName)
+		tenant.UserName = tenant.Uid + TENANT_SUFFIX
 		break
 	}
-
 	smt, err = MySQL.Prepare("select org_id from org_user where user_id=?")
 	if smt != nil {
 		defer smt.Close()
@@ -259,8 +301,8 @@ func (device) GetOrgInfo(w http.ResponseWriter, r *http.Request) {
 	res["starMemberCount"] = 2
 	starMembers := make(members, 2)
 
-	starMembers[0] = &member{Uid: "11222", UserName: "111222@qq.com", NickName: "hehe"}
-	starMembers[1] = &member{Uid: "11222", UserName: "labc@163.com", NickName: "haha"}
+	starMembers[0] = &member{Uid: "11222", UserName: "11222@USER", NickName: "hehe"}
+	starMembers[1] = &member{Uid: "22233", UserName: "22233@USER", NickName: "haha"}
 	res["starMemberList"] = starMembers
 	return
 }
