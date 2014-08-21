@@ -95,7 +95,7 @@ func sortMemberList(lst []*member) {
 	}
 }
 
-func (device) GetUserListByTenantId(id string) members {
+func getUserListByTenantId(id string) members {
 	smt, err := MySQL.Prepare("select id, name, nickname, status user where tenant_id=?")
 	if smt != nil {
 		defer smt.Close()
@@ -123,7 +123,7 @@ func (device) GetUserListByTenantId(id string) members {
 	return ret
 }
 
-func (device) GetUserListByOrgId(id string) members {
+func getUserListByOrgId(id string) members {
 	smt, err := MySQL.Prepare("select id, name, nickname, status user where user_id in (select user_id from org_user where org_id=?)")
 	if smt != nil {
 		defer smt.Close()
@@ -151,6 +151,31 @@ func (device) GetUserListByOrgId(id string) members {
 	return ret
 }
 
+func (device) SyncOrg(w http.ResponseWriter, r *http.Request) {
+	baseRes := map[string]interface{}{"ret": OK, "errMsg": ""}
+
+	body := ""
+	res := map[string]interface{}{"baseResponse": baseRes}
+	defer RetPWriteJSON(w, r, res, &body, time.Now())
+
+	bodyBytes, err := ioutil.ReadAll(r.Body)
+	if err != nil {
+		res["ret"] = ParamErr
+		glog.Errorf("ioutil.ReadAll() failed (%s)", err.Error())
+		return
+	}
+	body = string(bodyBytes)
+
+	var args map[string]interface{}
+
+	if err := json.Unmarshal(bodyBytes, &args); err != nil {
+		baseRes["errMsg"] = err.Error()
+		baseRes["ret"] = ParamErr
+		return
+	}
+
+}
+
 // 客户端设备登录，返回 key 和身份 token
 func (device) GetOrgInfo(w http.ResponseWriter, r *http.Request) {
 	//if r.Method != "POST" {
@@ -173,8 +198,8 @@ func (device) GetOrgInfo(w http.ResponseWriter, r *http.Request) {
 	//var args map[string]interface{}
 
 	//if err := json.Unmarshal(bodyBytes, &args); err != nil {
-	//	baseRes["ErrMsg"] = err.Error()
-	//	baseRes["Ret"] = ParamErr
+	//	baseRes["errMsg"] = err.Error()
+	//	baseRes["ret"] = ParamErr
 	//	return
 	//}
 
