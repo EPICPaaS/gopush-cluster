@@ -78,7 +78,7 @@ func (device) CreateQun(w http.ResponseWriter, r *http.Request) {
 	creatorId := args["creatorId"].(string)
 	topic := args["topic"].(string)
 
-	qid := uuid.New() + "@qun"
+	qid := uuid.New()
 	qun := Qun{Id: qid, CreatorId: creatorId, Name: topic, Description: "", MaxMember: 100, Avatar: "", Created: now, Updated: now}
 
 	memberList := args["memberList"].([]interface{})
@@ -100,7 +100,7 @@ func (device) CreateQun(w http.ResponseWriter, r *http.Request) {
 		baseRes.Ret = InternalErr
 	}
 
-	res["ChatRoomName"] = qid
+	res["ChatRoomName"] = qid + QUN_SUFFIX
 
 	return
 }
