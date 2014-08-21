@@ -59,10 +59,10 @@ func (device) Push(w http.ResponseWriter, r *http.Request) {
 	toUserName := msg["toUserName"].(string)
 
 	// 获取推送目标用户 id 集
-	toUserIds := getToUserIds(toUserName)
+	toUserIds, pushType := getToUserIds(toUserName)
 
 	// 多推时接收端看到的发送人应该是 XXX 群/组织机构
-	if len(toUserIds) > 1 {
+	if pushType == QUN_SUFFIX || pushType == TENANT_SUFFIX || pushType == ORG_SUFFIX {
 		msg["fromUserName"] = toUserName
 	}
 
@@ -100,7 +100,6 @@ func (device) Push(w http.ResponseWriter, r *http.Request) {
 		}
 	}
 
-	// 返回 key、token
 	res["msgID"] = "msgid"
 	res["clientMsgId"] = msg["clientMsgId"]
 
@@ -108,18 +107,18 @@ func (device) Push(w http.ResponseWriter, r *http.Request) {
 }
 
 // 根据 toUserName 获得最终推送的 uid 集.
-func getToUserIds(toUserName string) []string {
+func getToUserIds(toUserName string) (userIds []string, pushType string) {
 	if strings.HasSuffix(toUserName, QUN_SUFFIX) { // 群推
 		userIds, err := getUserIdsInQun(toUserName)
 		if nil != err {
-			return []string{}
+			return []string{}, QUN_SUFFIX
 		}
 
 		return userIds
-	} else if strings.HasSuffix(toUserName, ORG_SUFFIX) { // 组织机构全部门推
-		users, err := GetUserListByOrgId(toUserName)
-		if nil != err {
-			return []string{}
+	} else if strings.HasSuffix(toUserName, ORG_SUFFIX) { // 组织机构部门推
+		users := getUserListByOrgId(toUserName)
+		if nil == users {
+			return []string{}, ORG_SUFFIX
 		}
 
 		userIds := []string{}
@@ -128,10 +127,10 @@ func getToUserIds(toUserName string) []string {
 		}
 
 		return userIds
-	} else if strings.HasSuffix(toUserName, TENANT_SUFFIX) { // 组织机构全单位推
-		users, err := GetUserListByTenantId(toUserName)
-		if nil != err {
-			return []string{}
+	} else if strings.HasSuffix(toUserName, TENANT_SUFFIX) { // 组织机构单位推
+		users := getUserListByTenantId(toUserName)
+		if nil == users {
+			return []string{}, TENANT_SUFFIX
 		}
 
 		userIds := []string{}
@@ -141,6 +140,6 @@ func getToUserIds(toUserName string) []string {
 
 		return userIds
 	} else { // 单推
-		return []string{toUserName}
+		return []string{toUserName}, "@user"
 	}
 }
