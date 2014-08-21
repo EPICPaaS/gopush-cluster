@@ -16,8 +16,8 @@ const (
 	// 群-用户关联插入 SQL.
 	InsertQunUserSQL = "INSERT INTO `qun_user` (`id`, `qun_id`, `user_id`, `sort`, `role`, `created`, `updated`) VALUES " +
 		"(?, ?, ?, ?, ?, ?, ?)"
-	// 根据群 id 查询群内用户 id 集.
-	SelectQunUserSQL = "SELECT `user_id` FROM `qun_user` WHERE `qun_id` = ?"
+	// 根据群 id 查询群内用户.
+	SelectQunUserSQL = "SELECT `id`, `nickname`, `avatar`, `status` FROM `user` where `id` in (SELECT `user_id` FROM `qun_user` where `qun_id` = ?)"
 )
 
 // 群结构.
@@ -210,14 +210,15 @@ func getUsersInQun(qunId string) ([]member, error) {
 	defer rows.Close()
 
 	for rows.Next() {
-		var name string
-		if err := rows.Scan(&name); err != nil {
+		m := member{}
+
+		if err := rows.Scan(&m.Uid, &m.NickName, &m.HeadImgUrl, &m.Status); err != nil {
 			glog.Error(err)
 
 			return nil, err
 		}
 
-		ret = append(ret, name)
+		ret = append(ret, m)
 	}
 
 	if err := rows.Err(); err != nil {
