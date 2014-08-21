@@ -197,8 +197,8 @@ func createQun(qun *Qun, qunUsers []QunUser) bool {
 	return true
 }
 
-// 在数据库中查询群内用户 id 集.
-func getUsersInQun(qunId string) ([]string, error) {
+// 在数据库中查询群内用户.
+func getUsersInQun(qunId string) ([]member, error) {
 	ret := []string{}
 
 	rows, err := MySQL.Query(SelectQunUserSQL, qunId)
