@@ -18,6 +18,8 @@ const (
 		"(?, ?, ?, ?, ?, ?, ?)"
 	// 根据群 id 查询群内用户.
 	SelectQunUserSQL = "SELECT `id`, `nickname`, `avatar`, `status` FROM `user` where `id` in (SELECT `user_id` FROM `qun_user` where `qun_id` = ?)"
+	// 根据群 id 查询群内用户 id.
+	SelectQunUserIdSQL = "SELECT `user_id` FROM `qun_user` where `qun_id` = ?"
 )
 
 // 群结构.
@@ -219,6 +221,39 @@ func getUsersInQun(qunId string) ([]member, error) {
 		}
 
 		ret = append(ret, m)
+	}
+
+	if err := rows.Err(); err != nil {
+		glog.Error(err)
+
+		return nil, err
+	}
+
+	return ret, nil
+}
+
+// 在数据库中查询群内用户 id.
+func getUserIdsInQun(qunId string) ([]string, error) {
+	ret := []string{}
+
+	rows, err := MySQL.Query(SelectQunUserIdSQL, qunId)
+	if err != nil {
+		glog.Error(err)
+
+		return nil, err
+	}
+	defer rows.Close()
+
+	for rows.Next() {
+		var uid string
+
+		if err := rows.Scan(&uid); err != nil {
+			glog.Error(err)
+
+			return nil, err
+		}
+
+		ret = append(ret, uid)
 	}
 
 	if err := rows.Err(); err != nil {
