@@ -96,43 +96,59 @@ func sortMemberList(lst []*member) {
 }
 
 func (device) GetUserListByTenantId(id string) members {
-	smt, err := MySQL.Prepare("select id, name,  parent_id, sort from org where tenant_id=?")
+	smt, err := MySQL.Prepare("select id, name, nickname, status user where tenant_id=?")
 	if smt != nil {
 		defer smt.Close()
 	} else {
-		return
+		return nil
 	}
 
 	if err != nil {
-		baseRes["errMsg"] = err.Error()
-		baseRes["ret"] = InternalErr
-		return
+		return nil
 	}
 
-	row, err := smt.Query("testTanantId")
+	row, err := smt.Query(id)
 	if row != nil {
 		defer row.Close()
 	} else {
-		return
+		return nil
 	}
-	data := list.New()
+	ret := members{}
 	for row.Next() {
 		rec := new(member)
-		row.Scan(&rec.Uid, &rec.NickName, &rec.parentId, &rec.sort)
-		rec.Uid = rec.Uid
-		rec.UserName = rec.Uid + ORG_SUFFIX
-		data.PushBack(rec)
+		row.Scan(&rec.Uid, &rec.UserName, &rec.NickName, &rec.Status)
+		ret = append(ret, rec)
 	}
-	err = row.Err()
-	if err != nil {
-		baseRes["errMsg"] = err.Error()
-		baseRes["ret"] = InternalErr
-		return
-	}
+
+	return ret
 }
 
 func (device) GetUserListByOrgId(id string) members {
+	smt, err := MySQL.Prepare("select id, name, nickname, status user where user_id in (select user_id from org_user where org_id=?)")
+	if smt != nil {
+		defer smt.Close()
+	} else {
+		return nil
+	}
 
+	if err != nil {
+		return nil
+	}
+
+	row, err := smt.Query(id)
+	if row != nil {
+		defer row.Close()
+	} else {
+		return nil
+	}
+	ret := members{}
+	for row.Next() {
+		rec := new(member)
+		row.Scan(&rec.Uid, &rec.UserName, &rec.NickName, &rec.Status)
+		ret = append(ret, rec)
+	}
+
+	return ret
 }
 
 // 客户端设备登录，返回 key 和身份 token
