@@ -1,6 +1,7 @@
 package app
 
+// 定义移动端操作结构
 type device struct{}
 
-// 移动端接口
+// 声明移动端操作接口
 var Device = device{}

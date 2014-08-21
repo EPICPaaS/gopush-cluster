@@ -12,8 +12,8 @@ import (
 
 // 客户端设备推送消息.
 // 1. 单推
-// 2. 群推
-// 3. 组织机构推
+// 2. 群推（@qun）
+// 3. 组织机构推（部门 @org，单位 @tenant）
 func (device) Push(w http.ResponseWriter, r *http.Request) {
 	if r.Method != "POST" {
 		http.Error(w, "Method Not Allowed", 405)
