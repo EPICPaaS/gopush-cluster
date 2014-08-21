@@ -148,7 +148,7 @@ func (device) GetUsersInQun(w http.ResponseWriter, r *http.Request) {
 
 	// TODO: MemberList
 
-	res["MemberList"] = members
+	res["memberList"] = members
 
 	return
 }

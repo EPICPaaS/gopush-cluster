@@ -109,20 +109,38 @@ func (device) Push(w http.ResponseWriter, r *http.Request) {
 
 // 根据 toUserName 获得最终推送的 uid 集.
 func getToUserIds(toUserName string) []string {
-	ret := []string{}
-
-	if strings.HasSuffix(toUserName, "@qun") { // 群推
+	if strings.HasSuffix(toUserName, QUN_SUFFIX) { // 群推
 		userIds, err := getUserIdsInQun(toUserName)
 		if nil != err {
-			return ret
+			return []string{}
 		}
 
 		return userIds
-	} else if strings.HasSuffix(toUserName, "@org") { // 组织机构推
-		// TODO: 组织机构推
-	} else { // 单推
-		ret = append(ret, toUserName)
-	}
+	} else if strings.HasSuffix(toUserName, ORG_SUFFIX) { // 组织机构全部门推
+		users, err := GetUserListByOrgId(toUserName)
+		if nil != err {
+			return []string{}
+		}
 
-	return ret
+		userIds := []string{}
+		for _, user := range users {
+			userIds = append(userIds, user.Uid)
+		}
+
+		return userIds
+	} else if strings.HasSuffix(toUserName, TENANT_SUFFIX) { // 组织机构全单位推
+		users, err := GetUserListByTenantId(toUserName)
+		if nil != err {
+			return []string{}
+		}
+
+		userIds := []string{}
+		for _, user := range users {
+			userIds = append(userIds, user.Uid)
+		}
+
+		return userIds
+	} else { // 单推
+		return []string{toUserName}
+	}
 }
