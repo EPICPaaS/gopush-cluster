@@ -114,7 +114,7 @@ func getToUserIds(toUserName string) (userIds []string, pushType string) {
 			return []string{}, QUN_SUFFIX
 		}
 
-		return userIds
+		return userIds, QUN_SUFFIX
 	} else if strings.HasSuffix(toUserName, ORG_SUFFIX) { // 组织机构部门推
 		users := getUserListByOrgId(toUserName)
 		if nil == users {
@@ -126,7 +126,7 @@ func getToUserIds(toUserName string) (userIds []string, pushType string) {
 			userIds = append(userIds, user.Uid)
 		}
 
-		return userIds
+		return userIds, ORG_SUFFIX
 	} else if strings.HasSuffix(toUserName, TENANT_SUFFIX) { // 组织机构单位推
 		users := getUserListByTenantId(toUserName)
 		if nil == users {
@@ -138,7 +138,7 @@ func getToUserIds(toUserName string) (userIds []string, pushType string) {
 			userIds = append(userIds, user.Uid)
 		}
 
-		return userIds
+		return userIds, TENANT_SUFFIX
 	} else { // 单推
 		return []string{toUserName}, "@user"
 	}
