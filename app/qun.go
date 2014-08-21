@@ -16,8 +16,10 @@ const (
 	// 群-用户关联插入 SQL.
 	InsertQunUserSQL = "INSERT INTO `qun_user` (`id`, `qun_id`, `user_id`, `sort`, `role`, `created`, `updated`) VALUES " +
 		"(?, ?, ?, ?, ?, ?, ?)"
-	// 根据群 id 查询群内用户 id 集.
-	SelectQunUserSQL = "SELECT `user_id` FROM `qun_user` WHERE `qun_id` = ?"
+	// 根据群 id 查询群内用户.
+	SelectQunUserSQL = "SELECT `id`, `nickname`, `avatar`, `status` FROM `user` where `id` in (SELECT `user_id` FROM `qun_user` where `qun_id` = ?)"
+	// 根据群 id 查询群内用户 id.
+	SelectQunUserIdSQL = "SELECT `user_id` FROM `qun_user` where `qun_id` = ?"
 )
 
 // 群结构.
@@ -78,7 +80,7 @@ func (device) CreateQun(w http.ResponseWriter, r *http.Request) {
 	creatorId := args["creatorId"].(string)
 	topic := args["topic"].(string)
 
-	qid := uuid.New() + "@qun"
+	qid := uuid.New()
 	qun := Qun{Id: qid, CreatorId: creatorId, Name: topic, Description: "", MaxMember: 100, Avatar: "", Created: now, Updated: now}
 
 	memberList := args["memberList"].([]interface{})
@@ -100,7 +102,7 @@ func (device) CreateQun(w http.ResponseWriter, r *http.Request) {
 		baseRes.Ret = InternalErr
 	}
 
-	res["ChatRoomName"] = qid
+	res["ChatRoomName"] = qid + QUN_SUFFIX
 
 	return
 }
@@ -197,9 +199,9 @@ func createQun(qun *Qun, qunUsers []QunUser) bool {
 	return true
 }
 
-// 在数据库中查询群内用户 id 集.
-func getUsersInQun(qunId string) ([]string, error) {
-	ret := []string{}
+// 在数据库中查询群内用户.
+func getUsersInQun(qunId string) ([]member, error) {
+	ret := []member{}
 
 	rows, err := MySQL.Query(SelectQunUserSQL, qunId)
 	if err != nil {
@@ -210,14 +212,48 @@ func getUsersInQun(qunId string) ([]string, error) {
 	defer rows.Close()
 
 	for rows.Next() {
-		var name string
-		if err := rows.Scan(&name); err != nil {
+		m := member{}
+
+		if err := rows.Scan(&m.Uid, &m.NickName, &m.HeadImgUrl, &m.Status); err != nil {
 			glog.Error(err)
 
 			return nil, err
 		}
 
-		ret = append(ret, name)
+		ret = append(ret, m)
+	}
+
+	if err := rows.Err(); err != nil {
+		glog.Error(err)
+
+		return nil, err
+	}
+
+	return ret, nil
+}
+
+// 在数据库中查询群内用户 id.
+func getUserIdsInQun(qunId string) ([]string, error) {
+	ret := []string{}
+
+	rows, err := MySQL.Query(SelectQunUserIdSQL, qunId)
+	if err != nil {
+		glog.Error(err)
+
+		return nil, err
+	}
+	defer rows.Close()
+
+	for rows.Next() {
+		var uid string
+
+		if err := rows.Scan(&uid); err != nil {
+			glog.Error(err)
+
+			return nil, err
+		}
+
+		ret = append(ret, uid)
 	}
 
 	if err := rows.Err(); err != nil {

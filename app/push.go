@@ -112,7 +112,7 @@ func getToUserIds(toUserName string) []string {
 	ret := []string{}
 
 	if strings.HasSuffix(toUserName, "@qun") { // 群推
-		userIds, err := getUsersInQun(toUserName)
+		userIds, err := getUserIdsInQun(toUserName)
 		if nil != err {
 			return ret
 		}
