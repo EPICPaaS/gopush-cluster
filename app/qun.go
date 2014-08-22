@@ -104,6 +104,7 @@ func (device) CreateQun(w http.ResponseWriter, r *http.Request) {
 
 	res["ChatRoomName"] = qid + QUN_SUFFIX
 	res["topic"] = topic
+	res["memberCount"] = args["memberCount"].(string)
 
 	members, err := getUsersInQun(qid)
 	if err != nil {
