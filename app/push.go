@@ -78,25 +78,11 @@ func (device) Push(w http.ResponseWriter, r *http.Request) {
 		// uid 就是 gopush 的 key
 		key := uid
 
-		node := myrpc.GetComet(key)
-		if node == nil || node.CometRPC == nil {
-			glog.Errorf("Get comet node failed [key=%s]", key)
-			baseRes["ret"] = NotFoundServer
+		result := push(key, msgBytes, expire)
+		if OK != result {
+			baseRes["ret"] = result
 
-			// 推送分发过程中失败不立即返回，继续下一个推送，下同
-		}
-
-		client := node.CometRPC.Get()
-		if client == nil {
-			glog.Errorf("Get comet node RPC client failed [key=%s]", key)
-			baseRes["ret"] = NotFoundServer
-		}
-
-		pushArgs := &myrpc.CometPushPrivateArgs{Msg: json.RawMessage(msgBytes), Expire: uint(expire), Key: key}
-		ret := 0
-		if err := client.Call(myrpc.CometServicePushPrivate, pushArgs, &ret); err != nil {
-			glog.Errorf("client.Call(\"%s\", \"%v\", &ret) error(%v)", myrpc.CometServicePushPrivate, args, err)
-			baseRes["ret"] = InternalErr
+			// 推送分发过程中失败不立即返回，继续下一个推送
 		}
 	}
 
@@ -104,6 +90,34 @@ func (device) Push(w http.ResponseWriter, r *http.Request) {
 	res["clientMsgId"] = msg["clientMsgId"]
 
 	return
+}
+
+func push(key string, msgBytes []byte, expire int) int {
+	node := myrpc.GetComet(key)
+
+	if node == nil || node.CometRPC == nil {
+		glog.Errorf("Get comet node failed [key=%s]", key)
+
+		return NotFoundServer
+	}
+
+	client := node.CometRPC.Get()
+	if client == nil {
+		glog.Errorf("Get comet node RPC client failed [key=%s]", key)
+
+		return NotFoundServer
+	}
+
+	pushArgs := &myrpc.CometPushPrivateArgs{Msg: json.RawMessage(msgBytes), Expire: uint(expire), Key: key}
+
+	ret := OK
+	if err := client.Call(myrpc.CometServicePushPrivate, pushArgs, &ret); err != nil {
+		glog.Errorf("client.Call(\"%s\", \"%v\", &ret) error(%v)", myrpc.CometServicePushPrivate, string(msgBytes), err)
+
+		return InternalErr
+	}
+
+	return ret
 }
 
 // 根据 toUserName 获得最终推送的 uid 集.
