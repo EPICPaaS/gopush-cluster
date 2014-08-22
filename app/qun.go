@@ -103,6 +103,16 @@ func (device) CreateQun(w http.ResponseWriter, r *http.Request) {
 	}
 
 	res["ChatRoomName"] = qid + QUN_SUFFIX
+	res["topic"] = topic
+
+	members, err := getUsersInQun(qid)
+	if err != nil {
+		baseRes.ErrMsg = err.Error()
+		baseRes.Ret = InternalErr
+		return
+	}
+
+	res["memberList"] = members
 
 	return
 }
@@ -145,8 +155,6 @@ func (device) GetUsersInQun(w http.ResponseWriter, r *http.Request) {
 		baseRes.Ret = InternalErr
 		return
 	}
-
-	// TODO: MemberList
 
 	res["memberList"] = members
 
