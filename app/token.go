@@ -28,8 +28,8 @@ type redisStorage struct {
 var rs *redisStorage
 
 type RedisToken struct {
-	token  string
-	expire int64
+	Token  string
+	Expire int64
 }
 
 // initRedisStorage initialize the redis pool and consistency hash ring.
@@ -108,11 +108,11 @@ func genToken(user *member) (string, error) {
 	expire := int64(Conf.TokenExpire) + time.Now().Unix()
 	token := user.Uid + "_" + uuid.New()
 
-	rm := &RedisToken{token: token, expire: expire}
-	m, err := json.Marshal(rm)
+	rt := &RedisToken{token, expire}
+	m, err := json.Marshal(rt)
 
 	if err != nil {
-		glog.Errorf("json.Marshal(\"%v\") error(%v)", rm, err)
+		glog.Errorf("json.Marshal(\"%v\") error(%v)", rt, err)
 		return "", err
 	}
 
