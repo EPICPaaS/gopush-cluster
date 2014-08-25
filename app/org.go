@@ -8,6 +8,7 @@ import (
 	"io/ioutil"
 	"net/http"
 	"sort"
+	"strings"
 	"time"
 )
 
@@ -22,8 +23,45 @@ type member struct {
 	PYQuanPin   string    `json:"pYQuanPin"`
 	Status      string    `json:"status"`
 	StarFriend  int       `json:"starFriend"`
+	Avatar      string    `json:"avatar"`
 	parentId    string    `json:"parentId"`
 	sort        int       `json:"sort"`
+}
+
+func getUserByCode(code string) *member {
+	isEmail := false
+	if strings.LastIndex(code, "@") > -1 {
+		isEmail = true
+	}
+	sql := "select id, name, nickname, status, avatar from user where name=?"
+	if isEmail {
+		sql = "select id, name, nickname, status, avatar from user where email=?"
+	}
+	smt, err := MySQL.Prepare(sql)
+	if smt != nil {
+		defer smt.Close()
+	} else {
+		return nil
+	}
+
+	if err != nil {
+		return nil
+	}
+
+	row, err := smt.Query(code)
+	if row != nil {
+		defer row.Close()
+	} else {
+		return nil
+	}
+
+	for row.Next() {
+		rec := member{}
+		row.Scan(&rec.Uid, &rec.UserName, &rec.NickName, &rec.Status, &rec.Avatar)
+		return &rec
+	}
+
+	return nil
 }
 
 // 客户端设备登录，返回 key 和身份 token.
@@ -66,11 +104,12 @@ func (device) Login(w http.ResponseWriter, r *http.Request) {
 
 	// TODO: 登录逻辑
 
+	mem := getUserByCode(userName.(string))
+	mem.UserName = mem.Uid + USER_SUFFIX
 	// 返回 key、token
-	res["uid"] = "ukey"
+	res["uid"] = mem.Uid
 	res["token"] = "utoken"
-
-	return
+	res["member"] = mem
 }
 
 type members []*member

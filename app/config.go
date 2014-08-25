@@ -33,6 +33,7 @@ const (
 	TENANT_SUFFIX = "@tenant"
 	ORG_SUFFIX    = "@org"
 	QUN_SUFFIX    = "@qun"
+	USER_SUFFIX   = "@user"
 )
 
 // InitConfig initialize config file path
