@@ -282,3 +282,21 @@ func getUserIdsInQun(qunId string) ([]string, error) {
 
 	return ret, nil
 }
+
+func getUserNamessInQun(qunId string) ([]string, error) {
+	ret := []string{}
+
+	ids, err := getUserIdsInQun(qunId)
+
+	if nil != err {
+		glog.Error(err)
+
+		return nil, err
+	}
+
+	for _, id := range ids {
+		ret = append(ret, id+USER_SUFFIX)
+	}
+
+	return ret, nil
+}
