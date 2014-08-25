@@ -94,6 +94,9 @@ func (device) CreateQun(w http.ResponseWriter, r *http.Request) {
 		qunUsers = append(qunUsers, qunUser)
 	}
 
+	creator := QunUser{Id: uuid.New(), QunId: qid, UserId: creatorId, Sort: 0, Role: 0, Created: now, Updated: now}
+	qunUsers = append(qunUsers, creator)
+
 	if createQun(&qun, qunUsers) {
 		glog.Infof("Created Qun [id=%s]", qid)
 	} else {
