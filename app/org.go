@@ -73,7 +73,7 @@ func (device) Login(w http.ResponseWriter, r *http.Request) {
 
 	baseRes := baseResponse{OK, ""}
 	body := ""
-	res := map[string]interface{}{"baseResponse": baseRes}
+	res := map[string]interface{}{"baseResponse": &baseRes}
 	defer RetPWriteJSON(w, r, res, &body, time.Now())
 
 	bodyBytes, err := ioutil.ReadAll(r.Body)
@@ -106,6 +106,15 @@ func (device) Login(w http.ResponseWriter, r *http.Request) {
 	// TODO: 登录验证逻辑
 
 	member := getUserByCode(userName)
+	if nil == member {
+		baseRes.ErrMsg = "auth failed"
+		baseRes.Ret = ParamErr
+
+		glog.Info(res)
+
+		return
+	}
+
 	member.UserName = member.Uid + USER_SUFFIX
 
 	res["uid"] = member.Uid

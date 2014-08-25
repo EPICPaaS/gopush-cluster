@@ -132,12 +132,6 @@ func genToken(user *member) (string, error) {
 		return "", err
 	}
 
-	_, err = conn.Receive()
-	if err != nil {
-		glog.Errorf("conn.Receive() error(%v)", err)
-		return "", err
-	}
-
 	return token, nil
 }
 
@@ -149,11 +143,11 @@ func (s *redisStorage) getConn(key string) redis.Conn {
 	node := s.ring.Hash(key)
 	p, ok := s.pool[node]
 	if !ok {
-		glog.Warningf("user_key: \"%s\" hit redis node: \"%s\" not in pool", key, node)
+		glog.Warningf("key: \"%s\" hit redis node: \"%s\" not in pool", key, node)
 		return nil
 	}
 
-	glog.V(1).Infof("user_key: \"%s\" hit redis node: \"%s\"", key, node)
+	glog.V(5).Infof("key: \"%s\" hit redis node: \"%s\"", key, node)
 
 	return p.Get()
 }

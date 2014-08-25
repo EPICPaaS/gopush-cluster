@@ -54,7 +54,7 @@ func (device) CreateQun(w http.ResponseWriter, r *http.Request) {
 
 	baseRes := baseResponse{OK, ""}
 	body := ""
-	res := map[string]interface{}{"baseResponse": baseRes}
+	res := map[string]interface{}{"baseResponse": &baseRes}
 	defer RetPWriteJSON(w, r, res, &body, time.Now())
 
 	bodyBytes, err := ioutil.ReadAll(r.Body)
@@ -136,7 +136,7 @@ func (device) GetUsersInQun(w http.ResponseWriter, r *http.Request) {
 
 	baseRes := baseResponse{OK, ""}
 	body := ""
-	res := map[string]interface{}{"baseResponse": baseRes}
+	res := map[string]interface{}{"baseResponse": &baseRes}
 	defer RetPWriteJSON(w, r, res, &body, time.Now())
 
 	bodyBytes, err := ioutil.ReadAll(r.Body)
