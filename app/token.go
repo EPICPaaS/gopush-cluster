@@ -90,7 +90,7 @@ func InitRedisStorage() {
 // 根据令牌返回用户.
 func getUserByToken(token string) *member {
 	uid := token[:strings.Index(token, "_")]
-	// TODO: 根据 token 返回用户
+	// TODO: validate token
 
 	return getUserByCode(uid)
 }
