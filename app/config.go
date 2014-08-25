@@ -18,6 +18,7 @@ package app
 
 import (
 	"flag"
+	"fmt"
 	"github.com/Terry-Mao/goconf"
 	"github.com/golang/glog"
 	"runtime"
@@ -42,23 +43,30 @@ func init() {
 }
 
 type Config struct {
-	HttpBind             []string      `goconf:"base:http.bind:,"`
-	AdminBind            []string      `goconf:"base:admin.bind:,"`
-	AppBind              []string      `goconf:"base:app.bind:,"`
-	AppDBURL             string        `goconf:"base:app.dbURL"`
-	MaxProc              int           `goconf:"base:maxproc"`
-	PprofBind            []string      `goconf:"base:pprof.bind:,"`
-	User                 string        `goconf:"base:user"`
-	PidFile              string        `goconf:"base:pidfile"`
-	Dir                  string        `goconf:"base:dir"`
-	Router               string        `goconf:"base:router"`
-	QQWryPath            string        `goconf:"res:qqwry.path"`
-	ZookeeperAddr        []string      `goconf:"zookeeper:addr:,"`
-	ZookeeperTimeout     time.Duration `goconf:"zookeeper:timeout:time"`
-	ZookeeperCometPath   string        `goconf:"zookeeper:comet.path"`
-	ZookeeperMessagePath string        `goconf:"zookeeper:message.path"`
-	RPCRetry             time.Duration `goconf:"rpc:retry:time"`
-	RPCPing              time.Duration `goconf:"rpc:ping:time"`
+	HttpBind             []string          `goconf:"base:http.bind:,"`
+	AdminBind            []string          `goconf:"base:admin.bind:,"`
+	AppBind              []string          `goconf:"base:app.bind:,"`
+	AppDBURL             string            `goconf:"base:app.dbURL"`
+	MaxProc              int               `goconf:"base:maxproc"`
+	PprofBind            []string          `goconf:"base:pprof.bind:,"`
+	User                 string            `goconf:"base:user"`
+	PidFile              string            `goconf:"base:pidfile"`
+	Dir                  string            `goconf:"base:dir"`
+	Router               string            `goconf:"base:router"`
+	QQWryPath            string            `goconf:"res:qqwry.path"`
+	ZookeeperAddr        []string          `goconf:"zookeeper:addr:,"`
+	ZookeeperTimeout     time.Duration     `goconf:"zookeeper:timeout:time"`
+	ZookeeperCometPath   string            `goconf:"zookeeper:comet.path"`
+	ZookeeperMessagePath string            `goconf:"zookeeper:message.path"`
+	RPCRetry             time.Duration     `goconf:"rpc:retry:time"`
+	RPCPing              time.Duration     `goconf:"rpc:ping:time"`
+	RedisSource          map[string]string `goconf:"-"`
+	RedisIdleTimeout     time.Duration     `goconf:"redis:timeout:time"`
+	RedisMaxIdle         int               `goconf:"redis:idle"`
+	RedisMaxActive       int               `goconf:"redis:active"`
+	RedisMaxStore        int               `goconf:"redis:store"`
+	RedisKetamaBase      int               `goconf:"redis:ketama.base"`
+	TokenExpire          int               `goconf:"token:expire"`
 }
 
 // InitConfig init configuration file.
@@ -85,10 +93,23 @@ func InitConfig() error {
 		ZookeeperMessagePath: "/gopush-cluster-message",
 		RPCRetry:             3 * time.Second,
 		RPCPing:              1 * time.Second,
+		RedisSource:          make(map[string]string),
 	}
+
 	if err := gconf.Unmarshal(Conf); err != nil {
 		glog.Errorf("goconf.Unmarshall() error(%v)", err)
 		return err
+	}
+
+	redisAddrsSec := gconf.Get("redis.source")
+	if redisAddrsSec != nil {
+		for _, key := range redisAddrsSec.Keys() {
+			addr, err := redisAddrsSec.String(key)
+			if err != nil {
+				return fmt.Errorf("config section: \"redis.addrs\" key: \"%s\" error(%v)", key, err)
+			}
+			Conf.RedisSource[key] = addr
+		}
 	}
 	return nil
 }

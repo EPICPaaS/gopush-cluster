@@ -60,6 +60,8 @@ func main() {
 	app.InitDB()
 	defer app.CloseDB()
 
+	app.InitRedisStorage()
+
 	// start http listen.
 	StartHTTP()
 	// init process

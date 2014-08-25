@@ -71,16 +71,16 @@ func getUserByCode(code string) *member {
 	return nil
 }
 
-// 客户端设备登录，返回 key 和身份 token.
+// 客户端设备登录.
 func (device) Login(w http.ResponseWriter, r *http.Request) {
 	if r.Method != "POST" {
 		http.Error(w, "Method Not Allowed", 405)
 		return
 	}
 
-	baseRes := map[string]interface{}{"ret": OK, "errMsg": ""}
+	baseRes := baseResponse{OK, ""}
 	body := ""
-	res := map[string]interface{}{"baseResponse": baseRes}
+	res := map[string]interface{}{"baseResponse": &baseRes}
 	defer RetPWriteJSON(w, r, res, &body, time.Now())
 
 	bodyBytes, err := ioutil.ReadAll(r.Body)
@@ -94,8 +94,9 @@ func (device) Login(w http.ResponseWriter, r *http.Request) {
 	var args map[string]interface{}
 
 	if err := json.Unmarshal(bodyBytes, &args); err != nil {
-		baseRes["errMsg"] = err.Error()
-		baseRes["ret"] = ParamErr
+		baseRes.ErrMsg = err.Error()
+		baseRes.Ret = ParamErr
+
 		return
 	}
 
@@ -103,20 +104,40 @@ func (device) Login(w http.ResponseWriter, r *http.Request) {
 
 	uid := baseReq["uid"]
 	deviceId := baseReq["deviceID"]
-	userName := args["userName"]
-	password := args["password"]
+	userName := args["userName"].(string)
+	password := args["password"].(string)
 
 	glog.V(1).Infof("uid [%d], deviceId [%s], userName [%s], password [%s]",
 		uid, deviceId, userName, password)
 
-	// TODO: 登录逻辑
+	// TODO: 登录验证逻辑
 
-	mem := getUserByCode(userName.(string))
-	mem.UserName = mem.Uid + USER_SUFFIX
-	// 返回 key、token
-	res["uid"] = mem.Uid
-	res["token"] = "utoken"
-	res["member"] = mem
+	member := getUserByCode(userName)
+	if nil == member {
+		baseRes.ErrMsg = "auth failed"
+		baseRes.Ret = ParamErr
+
+		glog.Info(res)
+
+		return
+	}
+
+	member.UserName = member.Uid + USER_SUFFIX
+
+	res["uid"] = member.Uid
+
+	token, err := genToken(member)
+	if nil != err {
+		glog.Error(err)
+
+		baseRes.ErrMsg = err.Error()
+		baseRes.Ret = InternalErr
+
+		return
+	}
+
+	res["token"] = token
+	res["member"] = member
 }
 
 type members []*member
@@ -549,7 +570,6 @@ func isExists(id string) (bool, string) {
 	return false, ""
 }
 
-// 客户端设备登录，返回 key 和身份 token
 func (device) GetOrgInfo(w http.ResponseWriter, r *http.Request) {
 	//if r.Method != "POST" {
 	//	http.Error(w, "Method Not Allowed", 405)

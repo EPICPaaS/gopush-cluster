@@ -20,14 +20,14 @@ func (device) Push(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	baseRes := map[string]interface{}{"ret": OK, "errMsg": ""}
+	baseRes := baseResponse{OK, ""}
 	body := ""
-	res := map[string]interface{}{"baseResponse": baseRes}
+	res := map[string]interface{}{"baseResponse": &baseRes}
 	defer RetPWriteJSON(w, r, res, &body, time.Now())
 
 	bodyBytes, err := ioutil.ReadAll(r.Body)
 	if err != nil {
-		baseRes["ret"] = ParamErr
+		baseRes.Ret = ParamErr
 		glog.Errorf("ioutil.ReadAll() failed (%s)", err.Error())
 		return
 	}
@@ -36,8 +36,8 @@ func (device) Push(w http.ResponseWriter, r *http.Request) {
 	var args map[string]interface{}
 
 	if err := json.Unmarshal(bodyBytes, &args); err != nil {
-		baseRes["errMsg"] = err.Error()
-		baseRes["ret"] = ParamErr
+		baseRes.ErrMsg = err.Error()
+		baseRes.Ret = ParamErr
 		return
 	}
 
@@ -68,8 +68,9 @@ func (device) Push(w http.ResponseWriter, r *http.Request) {
 
 	msgBytes, err := json.Marshal(msg)
 	if err != nil {
-		baseRes["ret"] = ParamErr
+		baseRes.Ret = ParamErr
 		glog.Error(err)
+
 		return
 	}
 
@@ -80,7 +81,7 @@ func (device) Push(w http.ResponseWriter, r *http.Request) {
 
 		result := push(key, msgBytes, expire)
 		if OK != result {
-			baseRes["ret"] = result
+			baseRes.Ret = result
 
 			// 推送分发过程中失败不立即返回，继续下一个推送
 		}
