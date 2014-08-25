@@ -103,6 +103,26 @@ func (device) CreateQun(w http.ResponseWriter, r *http.Request) {
 	}
 
 	res["ChatRoomName"] = qid + QUN_SUFFIX
+	res["topic"] = topic
+	res["memberCount"] = int(args["memberCount"].(float64))
+
+	members, err := getUsersInQun(qid)
+	if err != nil {
+		baseRes.ErrMsg = err.Error()
+		baseRes.Ret = InternalErr
+		return
+	}
+
+	res["memberList"] = members
+
+	for _, member := range members {
+		result := push(member.Uid, []byte("{\"msg\": \"Create Qun Test Succeed!\"}"), 60)
+		glog.Infof("Pushed create qun msg [key=%s]", member.Uid)
+
+		if OK != result {
+			glog.Error("Push create qun msg failed ", result)
+		}
+	}
 
 	return
 }
@@ -145,8 +165,6 @@ func (device) GetUsersInQun(w http.ResponseWriter, r *http.Request) {
 		baseRes.Ret = InternalErr
 		return
 	}
-
-	// TODO: MemberList
 
 	res["memberList"] = members
 
