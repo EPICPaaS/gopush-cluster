@@ -71,7 +71,7 @@ func (device) Login(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	baseRes := map[string]interface{}{"ret": OK, "errMsg": ""}
+	baseRes := baseResponse{OK, ""}
 	body := ""
 	res := map[string]interface{}{"baseResponse": baseRes}
 	defer RetPWriteJSON(w, r, res, &body, time.Now())
@@ -87,8 +87,9 @@ func (device) Login(w http.ResponseWriter, r *http.Request) {
 	var args map[string]interface{}
 
 	if err := json.Unmarshal(bodyBytes, &args); err != nil {
-		baseRes["errMsg"] = err.Error()
-		baseRes["ret"] = ParamErr
+		baseRes.ErrMsg = err.Error()
+		baseRes.Ret = ParamErr
+
 		return
 	}
 
@@ -108,7 +109,18 @@ func (device) Login(w http.ResponseWriter, r *http.Request) {
 	member.UserName = member.Uid + USER_SUFFIX
 
 	res["uid"] = member.Uid
-	res["token"] = genToken(member)
+
+	token, err := genToken(member)
+	if nil != err {
+		glog.Error(err)
+
+		baseRes.ErrMsg = err.Error()
+		baseRes.Ret = InternalErr
+
+		return
+	}
+
+	res["token"] = token
 	res["member"] = member
 }
 
