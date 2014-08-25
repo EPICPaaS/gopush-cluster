@@ -15,6 +15,7 @@ import (
 type member struct {
 	Uid         string    `json:"uid"`
 	UserName    string    `json:"userName"`
+	Name        string    `json:"name"`
 	NickName    string    `json:"nickName"`
 	HeadImgUrl  string    `json:"headImgUrl"`
 	MemberCount int       `json:"memberCount"`
@@ -25,7 +26,12 @@ type member struct {
 	StarFriend  int       `json:"starFriend"`
 	Avatar      string    `json:"avatar"`
 	parentId    string    `json:"parentId"`
+	email       string    `json:"email"`
 	sort        int       `json:"sort"`
+	rand        int       `json:"rand"`
+	Password    string    `json:"password"`
+	TenantId    string    `json:"tenantId"`
+	Email       string    `json:""`
 }
 
 func getUserByCode(code string) *member {
@@ -57,7 +63,8 @@ func getUserByCode(code string) *member {
 
 	for row.Next() {
 		rec := member{}
-		row.Scan(&rec.Uid, &rec.UserName, &rec.NickName, &rec.Status, &rec.Avatar)
+		row.Scan(&rec.Uid, &rec.Name, &rec.NickName, &rec.Status, &rec.Avatar)
+		rec.UserName = rec.Uid + USER_SUFFIX
 		return &rec
 	}
 
@@ -247,6 +254,65 @@ type org struct {
 	tenantId  string
 	location  string
 	sort      int
+}
+
+func updateUser(member *member, tx *sql.Tx) error {
+	st, err := tx.Prepare("update user set name=?, nickname=?, avastar=?, name_py=?, name_quanpin=?, status=?, rand=?, password=?, tenant_id=?, updated=?, email=? where id=?")
+	if err != nil {
+		return err
+	}
+
+	_, err = st.Exec(member.Name, member.NickName, member.Avatar, member.PYInitial, member.PYQuanPin, member.Status, member.rand, member.Password, member.TenantId, time.Now(), member.Email, member.Uid)
+
+	return err
+}
+
+func (device) SyncUser(w http.ResponseWriter, r *http.Request) {
+	baseRes := map[string]interface{}{"ret": OK, "errMsg": ""}
+	tx, err := MySQL.Begin()
+
+	body := ""
+	res := map[string]interface{}{"baseResponse": baseRes}
+	defer RetPWriteJSON(w, r, res, &body, time.Now())
+
+	if err != nil {
+		baseRes["errMsg"] = err.Error()
+		baseRes["ret"] = InternalErr
+	}
+	bodyBytes, err := ioutil.ReadAll(r.Body)
+	if err != nil {
+		res["ret"] = ParamErr
+		glog.Errorf("ioutil.ReadAll() failed (%s)", err.Error())
+		return
+	}
+	body = string(bodyBytes)
+
+	member := member{}
+	if err := json.Unmarshal(bodyBytes, &member); err != nil {
+		baseRes["errMsg"] = err.Error()
+		baseRes["ret"] = ParamErr
+		return
+	}
+
+	exists := isUserExists(member.Uid)
+	if exists {
+		updateUser(&member, tx)
+	} else {
+
+	}
+
+	rerr := recover()
+	if rerr != nil {
+		baseRes["errMsg"] = rerr
+		baseRes["ret"] = InternalErr
+		tx.Rollback()
+	} else {
+		err = tx.Commit()
+		if err != nil {
+			baseRes["errMsg"] = err.Error()
+			baseRes["ret"] = InternalErr
+		}
+	}
 }
 
 func (device) SyncOrg(w http.ResponseWriter, r *http.Request) {
@@ -450,6 +516,32 @@ func nextLocation(first, second string) string {
 	return first + second
 }
 
+func isUserExists(id string) bool {
+	smt, err := MySQL.Prepare("select 1 from user where id=?")
+	if smt != nil {
+		defer smt.Close()
+	} else {
+		return false
+	}
+
+	if err != nil {
+		return false
+	}
+
+	row, err := smt.Query(id)
+	if row != nil {
+		defer row.Close()
+	} else {
+		return false
+	}
+
+	for row.Next() {
+		return true
+	}
+
+	return false
+}
+
 func isExists(id string) (bool, string) {
 	smt, err := MySQL.Prepare("select parent_id from org where id=?")
 	if smt != nil {
@@ -644,8 +736,8 @@ func (device) GetOrgInfo(w http.ResponseWriter, r *http.Request) {
 	res["starMemberCount"] = 2
 	starMembers := make(members, 2)
 
-	starMembers[0] = &member{Uid: "11222", UserName: "11222@USER", NickName: "hehe"}
-	starMembers[1] = &member{Uid: "22233", UserName: "22233@USER", NickName: "haha"}
+	starMembers[0] = &member{Uid: "11222", UserName: "11222@user", NickName: "hehe"}
+	starMembers[1] = &member{Uid: "22233", UserName: "22233@user", NickName: "haha"}
 	res["starMemberList"] = starMembers
 	return
 }
