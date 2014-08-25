@@ -59,7 +59,7 @@ func (device) Push(w http.ResponseWriter, r *http.Request) {
 	toUserName := msg["toUserName"].(string)
 
 	// 获取推送目标用户 id 集
-	toUserIds, pushType := getToUserNames(toUserName)
+	toUserNames, pushType := getToUserNames(toUserName)
 
 	// 多推时接收端看到的发送人应该是 XXX 群/组织机构
 	if pushType == QUN_SUFFIX || pushType == TENANT_SUFFIX || pushType == ORG_SUFFIX {
@@ -75,9 +75,9 @@ func (device) Push(w http.ResponseWriter, r *http.Request) {
 	}
 
 	// 推送分发
-	for _, uid := range toUserIds {
-		// uid 就是 gopush 的 key
-		key := uid
+	for _, userName := range toUserNames {
+		// userName 就是 gopush 的 key
+		key := userName
 
 		result := push(key, msgBytes, expire)
 		if OK != result {
@@ -126,7 +126,10 @@ func push(key string, msgBytes []byte, expire int) int {
 // 根据 toUserName 获得最终推送的 name 集.
 func getToUserNames(toUserName string) (userNames []string, pushType string) {
 	if strings.HasSuffix(toUserName, QUN_SUFFIX) { // 群推
-		userNames, err := getUserNamessInQun(toUserName)
+		qunId := toUserName[:len(toUserName)-len(QUN_SUFFIX)]
+
+		glog.Info(qunId)
+		userNames, err := getUserNamessInQun(qunId)
 
 		if nil != err {
 			return []string{}, QUN_SUFFIX
@@ -134,7 +137,9 @@ func getToUserNames(toUserName string) (userNames []string, pushType string) {
 
 		return userNames, QUN_SUFFIX
 	} else if strings.HasSuffix(toUserName, ORG_SUFFIX) { // 组织机构部门推
-		users := getUserListByOrgId(toUserName)
+		orgId := toUserName[:len(toUserName)-len(ORG_SUFFIX)]
+
+		users := getUserListByOrgId(orgId)
 
 		if nil == users {
 			return []string{}, ORG_SUFFIX
@@ -147,7 +152,9 @@ func getToUserNames(toUserName string) (userNames []string, pushType string) {
 
 		return userNames, ORG_SUFFIX
 	} else if strings.HasSuffix(toUserName, TENANT_SUFFIX) { // 组织机构单位推
-		users := getUserListByTenantId(toUserName)
+		tenantId := toUserName[:len(toUserName)-len(TENANT_SUFFIX)]
+
+		users := getUserListByTenantId(tenantId)
 
 		if nil == users {
 			return []string{}, TENANT_SUFFIX

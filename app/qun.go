@@ -77,7 +77,8 @@ func (device) CreateQun(w http.ResponseWriter, r *http.Request) {
 
 	now := time.Now()
 
-	creatorId := args["creatorId"].(string)
+	baseRequest := args["baseRequest"].(map[string]interface{})
+	creatorId := baseRequest["uid"].(string)
 	topic := args["topic"].(string)
 
 	qid := uuid.New()
