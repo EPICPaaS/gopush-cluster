@@ -1,7 +1,6 @@
 package app
 
 import (
-	"container/list"
 	"database/sql"
 	"encoding/json"
 	"github.com/golang/glog"
@@ -571,40 +570,43 @@ func isExists(id string) (bool, string) {
 }
 
 func (device) GetOrgInfo(w http.ResponseWriter, r *http.Request) {
-	//if r.Method != "POST" {
-	//	http.Error(w, "Method Not Allowed", 405)
-	//	return
-	//}
+	if r.Method != "POST" {
+		http.Error(w, "Method Not Allowed", 405)
+		return
+	}
 	baseRes := map[string]interface{}{"ret": OK, "errMsg": ""}
 	body := ""
 	res := map[string]interface{}{"baseResponse": baseRes}
 	defer RetPWriteJSON(w, r, res, &body, time.Now())
 
-	//bodyBytes, err := ioutil.ReadAll(r.Body)
-	//if err != nil {
-	//	res["ret"] = ParamErr
-	//	glog.Errorf("ioutil.ReadAll() failed (%s)", err.Error())
-	//	return
-	//}
-	//body = string(bodyBytes)
+	bodyBytes, err := ioutil.ReadAll(r.Body)
+	if err != nil {
+		res["ret"] = ParamErr
+		glog.Errorf("ioutil.ReadAll() failed (%s)", err.Error())
+		return
+	}
+	body = string(bodyBytes)
 
-	//var args map[string]interface{}
+	var args map[string]interface{}
 
-	//if err := json.Unmarshal(bodyBytes, &args); err != nil {
-	//	baseRes["errMsg"] = err.Error()
-	//	baseRes["ret"] = ParamErr
-	//	return
-	//}
+	if err := json.Unmarshal(bodyBytes, &args); err != nil {
+		baseRes["errMsg"] = err.Error()
+		baseRes["ret"] = ParamErr
+		return
+	}
 
-	//baseReq := args["baseRequest"].(map[string]interface{})
+	baseReq := args["baseRequest"].(map[string]interface{})
 
-	//uid := int(baseReq["Uid"].(float64))
-	//deviceId := baseReq["DeviceID"]
-	//userName := args["userName"]
-	//password := args["password"]
+	uid := int(baseReq["uid"].(float64))
+	deviceId := baseReq["deviceID"]
+	userName := args["userName"]
+	password := args["password"]
+	token := args["token"].(string)
 
-	//glog.V(1).Infof("Uid [%d], DeviceId [%s], userName [%s], password [%s]",
-	//	uid, deviceId, userName, password)
+	currentUser := getUserByToken(token)
+
+	glog.V(1).Infof("Uid [%d], DeviceId [%s], userName [%s], password [%s]",
+		uid, deviceId, userName, password)
 
 	//// TODO: 登录逻辑
 
@@ -625,19 +627,19 @@ func (device) GetOrgInfo(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	row, err := smt.Query("testTanantId")
+	row, err := smt.Query(currentUser.TenantId)
 	if row != nil {
 		defer row.Close()
 	} else {
 		return
 	}
-	data := list.New()
+	data := members{}
 	for row.Next() {
 		rec := new(member)
 		row.Scan(&rec.Uid, &rec.NickName, &rec.parentId, &rec.sort)
 		rec.Uid = rec.Uid
 		rec.UserName = rec.Uid + ORG_SUFFIX
-		data.PushBack(rec)
+		data = append(data, rec)
 	}
 	err = row.Err()
 	if err != nil {
@@ -647,9 +649,8 @@ func (device) GetOrgInfo(w http.ResponseWriter, r *http.Request) {
 	}
 
 	unitMap := map[string]*member{}
-	for ele := data.Front(); ele != nil; ele = ele.Next() {
-		rec := ele.Value.(*member)
-		unitMap[rec.Uid] = rec
+	for _, ele := range data {
+		unitMap[ele.Uid] = ele
 	}
 
 	rootList := []*member{}
@@ -686,7 +687,7 @@ func (device) GetOrgInfo(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	row, err = smt.Query("testTanantId")
+	row, err = smt.Query(currentUser.TenantId)
 	if row != nil {
 		defer row.Close()
 	} else {
@@ -695,7 +696,6 @@ func (device) GetOrgInfo(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	data = list.New()
 	for row.Next() {
 		row.Scan(&tenant.Uid, &tenant.UserName, &tenant.NickName)
 		tenant.UserName = tenant.Uid + TENANT_SUFFIX
@@ -716,7 +716,7 @@ func (device) GetOrgInfo(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	row, err = smt.Query("testuser")
+	row, err = smt.Query(currentUser.Uid)
 	if row != nil {
 		defer row.Close()
 	} else {
@@ -725,7 +725,6 @@ func (device) GetOrgInfo(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	data = list.New()
 	for row.Next() {
 		userOgnization := ""
 		row.Scan(&userOgnization)
