@@ -597,7 +597,7 @@ func (device) GetOrgInfo(w http.ResponseWriter, r *http.Request) {
 
 	baseReq := args["baseRequest"].(map[string]interface{})
 
-	uid := int(baseReq["uid"].(float64))
+	uid := baseReq["uid"].(string)
 	deviceId := baseReq["deviceID"]
 	userName := args["userName"]
 	password := args["password"]
@@ -605,7 +605,7 @@ func (device) GetOrgInfo(w http.ResponseWriter, r *http.Request) {
 
 	currentUser := getUserByToken(token)
 
-	glog.V(1).Infof("Uid [%d], DeviceId [%s], userName [%s], password [%s]",
+	glog.V(1).Infof("Uid [%s], DeviceId [%s], userName [%s], password [%s]",
 		uid, deviceId, userName, password)
 
 	//// TODO: 登录逻辑
