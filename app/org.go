@@ -33,6 +33,42 @@ type member struct {
 	Email       string    `json:""`
 }
 
+func getUserByUid(uid string) *member {
+
+	sql := "select id, name, nickname, status, avatar, tenant_id, name_py, name_quanpin from user where id=?"
+
+	smt, err := MySQL.Prepare(sql)
+	if smt != nil {
+		defer smt.Close()
+	} else {
+		return nil
+	}
+
+	if err != nil {
+		return nil
+	}
+
+	row, err := smt.Query(uid)
+	if row != nil {
+		defer row.Close()
+	} else {
+		return nil
+	}
+
+	for row.Next() {
+		rec := member{}
+		err = row.Scan(&rec.Uid, &rec.Name, &rec.NickName, &rec.Status, &rec.Avatar, &rec.TenantId, &rec.PYInitial, &rec.PYQuanPin)
+		if err != nil {
+			glog.Error(err)
+		}
+
+		rec.UserName = rec.Uid + USER_SUFFIX
+		return &rec
+	}
+
+	return nil
+}
+
 func getUserByCode(code string) *member {
 	isEmail := false
 	if strings.LastIndex(code, "@") > -1 {
@@ -62,7 +98,10 @@ func getUserByCode(code string) *member {
 
 	for row.Next() {
 		rec := member{}
-		row.Scan(&rec.Uid, &rec.Name, &rec.NickName, &rec.Status, &rec.Avatar, &rec.TenantId, &rec.PYInitial, &rec.PYQuanPin)
+		err = row.Scan(&rec.Uid, &rec.Name, &rec.NickName, &rec.Status, &rec.Avatar, &rec.TenantId, &rec.PYInitial, &rec.PYQuanPin)
+		if err != nil {
+			glog.Error(err)
+		}
 		rec.UserName = rec.Uid + USER_SUFFIX
 		return &rec
 	}
