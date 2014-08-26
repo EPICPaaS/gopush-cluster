@@ -601,7 +601,7 @@ func (device) GetOrgInfo(w http.ResponseWriter, r *http.Request) {
 	deviceId := baseReq["deviceID"]
 	userName := args["userName"]
 	password := args["password"]
-	token := args["token"].(string)
+	token := baseReq["token"].(string)
 
 	currentUser := getUserByToken(token)
 
