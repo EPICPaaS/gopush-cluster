@@ -250,7 +250,8 @@ func getUserListByOrgId(id string) members {
 	ret := members{}
 	for row.Next() {
 		rec := new(member)
-		row.Scan(&rec.Uid, &rec.UserName, &rec.NickName, &rec.Status)
+		row.Scan(&rec.Uid, &rec.Name, &rec.NickName, &rec.Status)
+		rec.UserName = rec.Uid + USER_SUFFIX
 		ret = append(ret, rec)
 	}
 	return ret
