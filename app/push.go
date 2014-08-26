@@ -45,7 +45,7 @@ func (device) Push(w http.ResponseWriter, r *http.Request) {
 
 	//baseReq := args["baseRequest"].(map[string]interface{})
 	msg := args["msg"].(map[string]interface{})
-
+	// TODO: 在msg体前面加from user name
 	// TODO: 发送信息验证（发送人是否合法、消息内容是否合法）
 	// TODO: 好友关系校验（不是好友不能发等业务校验）
 
