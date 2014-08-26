@@ -732,11 +732,12 @@ func (device) GetOrgInfo(w http.ResponseWriter, r *http.Request) {
 		break
 	}
 
-	res["starMemberCount"] = 2
-	starMembers := make(members, 2)
+	res["starMemberCount"] = 0
+	/*
+		starMembers := make(members, 2)
 
-	starMembers[0] = &member{Uid: "11222", UserName: "11222@user", NickName: "hehe"}
-	starMembers[1] = &member{Uid: "22233", UserName: "22233@user", NickName: "haha"}
-	res["starMemberList"] = starMembers
+		starMembers[0] = &member{Uid: "11222", UserName: "11222@user", NickName: "hehe"}
+		starMembers[1] = &member{Uid: "22233", UserName: "22233@user", NickName: "haha"}
+		res["starMemberList"] = starMembers*/
 	return
 }
