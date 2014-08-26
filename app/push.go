@@ -10,6 +10,17 @@ import (
 	"time"
 )
 
+type MessageContentWrapper struct {
+	UserName    string
+	Name        string
+	NickName    string
+	ContentBody string
+}
+
+func NewMessageContentWrapper() *MessageContentWrapper {
+	return &MessageContentWrapper{}
+}
+
 // 客户端设备推送消息.
 // 1. 单推
 // 2. 群推（@qun）
@@ -45,7 +56,18 @@ func (device) Push(w http.ResponseWriter, r *http.Request) {
 
 	//baseReq := args["baseRequest"].(map[string]interface{})
 	msg := args["msg"].(map[string]interface{})
+	toUserName := msg["toUserName"].(string)
+
 	// TODO: 在msg体前面加from user name
+	if !strings.HasSuffix(toUserName, USER_SUFFIX) {
+		fromUserName := msg["fromUserName"].(string)
+		fromUserID := fromUserName[:strings.Index(fromUserName, "@")]
+		m := getUserByUid(fromUserID)
+
+		////TODO 坑爹的拼串
+		msg["content"] = fromUserName + "|" + m.Name + "|" + m.NickName + "&&" + msg["content"].(string)
+	}
+
 	// TODO: 发送信息验证（发送人是否合法、消息内容是否合法）
 	// TODO: 好友关系校验（不是好友不能发等业务校验）
 
@@ -56,8 +78,6 @@ func (device) Push(w http.ResponseWriter, r *http.Request) {
 		expire = int(exp.(float64))
 	}
 
-	toUserName := msg["toUserName"].(string)
-
 	// 获取推送目标用户 id 集
 	toUserNames, pushType := getToUserNames(toUserName)
 
@@ -66,19 +86,21 @@ func (device) Push(w http.ResponseWriter, r *http.Request) {
 		msg["fromUserName"] = toUserName
 	}
 
-	msgBytes, err := json.Marshal(msg)
-	if err != nil {
-		baseRes.Ret = ParamErr
-		glog.Error(err)
-
-		return
-	}
-
 	// 推送分发
 	for _, userName := range toUserNames {
 		// userName 就是 gopush 的 key
 		key := userName
+		//glog.Error(userName)
 
+		//多推时接收端看到的接收人应该是目标接收者
+		msg["toUserName"] = userName
+		msgBytes, err := json.Marshal(msg)
+		if err != nil {
+			baseRes.Ret = ParamErr
+			glog.Error(err)
+
+			return
+		}
 		result := push(key, msgBytes, expire)
 		if OK != result {
 			baseRes.Ret = result

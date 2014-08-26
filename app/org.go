@@ -34,39 +34,7 @@ type member struct {
 }
 
 func getUserByUid(uid string) *member {
-
-	sql := "select id, name, nickname, status, avatar, tenant_id, name_py, name_quanpin from user where id=?"
-
-	smt, err := MySQL.Prepare(sql)
-	if smt != nil {
-		defer smt.Close()
-	} else {
-		return nil
-	}
-
-	if err != nil {
-		return nil
-	}
-
-	row, err := smt.Query(uid)
-	if row != nil {
-		defer row.Close()
-	} else {
-		return nil
-	}
-
-	for row.Next() {
-		rec := member{}
-		err = row.Scan(&rec.Uid, &rec.Name, &rec.NickName, &rec.Status, &rec.Avatar, &rec.TenantId, &rec.PYInitial, &rec.PYQuanPin)
-		if err != nil {
-			glog.Error(err)
-		}
-
-		rec.UserName = rec.Uid + USER_SUFFIX
-		return &rec
-	}
-
-	return nil
+	return getUserByField("id", uid)
 }
 
 func getUserByCode(code string) *member {
@@ -74,10 +42,17 @@ func getUserByCode(code string) *member {
 	if strings.LastIndex(code, "@") > -1 {
 		isEmail = true
 	}
-	sql := "select id, name, nickname, status, avatar, tenant_id, name_py, name_quanpin from user where name=?"
+	fieldName := "name"
 	if isEmail {
-		sql = "select id, name, nickname, status, avatar, tenant_id, name_py, name_quanpin from user where email=?"
+		fieldName = "email"
 	}
+	return getUserByField(fieldName, code)
+}
+
+func getUserByField(fieldName, fieldArg string) *member {
+
+	sql := "select id, name, nickname, status, avatar, tenant_id, name_py, name_quanpin from user where " + fieldName + "=?"
+
 	smt, err := MySQL.Prepare(sql)
 	if smt != nil {
 		defer smt.Close()
@@ -89,7 +64,7 @@ func getUserByCode(code string) *member {
 		return nil
 	}
 
-	row, err := smt.Query(code)
+	row, err := smt.Query(fieldArg)
 	if row != nil {
 		defer row.Close()
 	} else {
@@ -102,6 +77,7 @@ func getUserByCode(code string) *member {
 		if err != nil {
 			glog.Error(err)
 		}
+
 		rec.UserName = rec.Uid + USER_SUFFIX
 		return &rec
 	}
