@@ -38,9 +38,9 @@ func getUserByCode(code string) *member {
 	if strings.LastIndex(code, "@") > -1 {
 		isEmail = true
 	}
-	sql := "select id, name, nickname, status, avatar from user where name=?"
+	sql := "select id, name, nickname, status, avatar, tenant_id, name_py, name_quanpin from user where name=?"
 	if isEmail {
-		sql = "select id, name, nickname, status, avatar from user where email=?"
+		sql = "select id, name, nickname, status, avatar, tenant_id, name_py, name_quanpin from user where email=?"
 	}
 	smt, err := MySQL.Prepare(sql)
 	if smt != nil {
@@ -62,7 +62,7 @@ func getUserByCode(code string) *member {
 
 	for row.Next() {
 		rec := member{}
-		row.Scan(&rec.Uid, &rec.Name, &rec.NickName, &rec.Status, &rec.Avatar)
+		row.Scan(&rec.Uid, &rec.Name, &rec.NickName, &rec.Status, &rec.Avatar, &rec.TenantId, &rec.PYInitial, &rec.PYQuanPin)
 		rec.UserName = rec.Uid + USER_SUFFIX
 		return &rec
 	}
