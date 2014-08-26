@@ -77,7 +77,8 @@ func (device) CreateQun(w http.ResponseWriter, r *http.Request) {
 
 	now := time.Now()
 
-	creatorId := args["creatorId"].(string)
+	baseRequest := args["baseRequest"].(map[string]interface{})
+	creatorId := baseRequest["uid"].(string)
 	topic := args["topic"].(string)
 
 	qid := uuid.New()
@@ -93,6 +94,9 @@ func (device) CreateQun(w http.ResponseWriter, r *http.Request) {
 
 		qunUsers = append(qunUsers, qunUser)
 	}
+
+	creator := QunUser{Id: uuid.New(), QunId: qid, UserId: creatorId, Sort: 0, Role: 0, Created: now, Updated: now}
+	qunUsers = append(qunUsers, creator)
 
 	if createQun(&qun, qunUsers) {
 		glog.Infof("Created Qun [id=%s]", qid)
@@ -278,6 +282,24 @@ func getUserIdsInQun(qunId string) ([]string, error) {
 		glog.Error(err)
 
 		return nil, err
+	}
+
+	return ret, nil
+}
+
+func getUserNamessInQun(qunId string) ([]string, error) {
+	ret := []string{}
+
+	ids, err := getUserIdsInQun(qunId)
+
+	if nil != err {
+		glog.Error(err)
+
+		return nil, err
+	}
+
+	for _, id := range ids {
+		ret = append(ret, id+USER_SUFFIX)
 	}
 
 	return ret, nil
