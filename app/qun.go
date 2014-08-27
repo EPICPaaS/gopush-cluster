@@ -90,6 +90,10 @@ func (device) CreateQun(w http.ResponseWriter, r *http.Request) {
 		member := m.(map[string]interface{})
 		memberId := member["uid"].(string)
 
+		if creatorId == memberId {
+			continue
+		}
+
 		qunUser := QunUser{Id: uuid.New(), QunId: qid, UserId: memberId, Sort: 0, Role: 0, Created: now, Updated: now}
 
 		qunUsers = append(qunUsers, qunUser)
