@@ -56,16 +56,26 @@ func (device) Push(w http.ResponseWriter, r *http.Request) {
 
 	//baseReq := args["baseRequest"].(map[string]interface{})
 	msg := args["msg"].(map[string]interface{})
+	fromUserName := msg["fromUserName"].(string)
+	fromUserID := fromUserName[:strings.Index(fromUserName, "@")]
 	toUserName := msg["toUserName"].(string)
+	toUserID := toUserName[:strings.Index(toUserName, "@")]
 
-	// TODO: 在msg体前面加from user name
-	if !strings.HasSuffix(toUserName, USER_SUFFIX) {
-		fromUserName := msg["fromUserName"].(string)
-		fromUserID := fromUserName[:strings.Index(fromUserName, "@")]
+	if strings.HasSuffix(toUserName, USER_SUFFIX) { // 如果是推人
 		m := getUserByUid(fromUserID)
 
-		////TODO 坑爹的拼串
 		msg["content"] = fromUserName + "|" + m.Name + "|" + m.NickName + "&&" + msg["content"].(string)
+		msg["fromDisplayName"] = m.NickName
+	} else if strings.HasSuffix(toUserName, QUN_SUFFIX) { // 如果是推群
+		qun := getQunById(toUserID)
+
+		msg["content"] = fromUserName + "|" + m.Name + "|" + m.NickName + "&&" + msg["content"].(string)
+		msg["fromDisplayName"] = qun.Name
+	} // TODO: 组织机构（部门/单位）推送消息体处理
+
+	// 多推时接收端看到的发送人应该是 XXX 群/组织机构
+	if pushType == QUN_SUFFIX || pushType == TENANT_SUFFIX || pushType == ORG_SUFFIX {
+		msg["fromUserName"] = toUserName
 	}
 
 	// TODO: 发送信息验证（发送人是否合法、消息内容是否合法）
@@ -80,11 +90,6 @@ func (device) Push(w http.ResponseWriter, r *http.Request) {
 
 	// 获取推送目标用户 id 集
 	toUserNames, pushType := getToUserNames(toUserName)
-
-	// 多推时接收端看到的发送人应该是 XXX 群/组织机构
-	if pushType == QUN_SUFFIX || pushType == TENANT_SUFFIX || pushType == ORG_SUFFIX {
-		msg["fromUserName"] = toUserName
-	}
 
 	// 推送分发
 	for _, userName := range toUserNames {

@@ -20,6 +20,8 @@ const (
 	SelectQunUserSQL = "SELECT `id`, `nickname`, `avatar`, `status` FROM `user` where `id` in (SELECT `user_id` FROM `qun_user` where `qun_id` = ?)"
 	// 根据群 id 查询群内用户 id.
 	SelectQunUserIdSQL = "SELECT `user_id` FROM `qun_user` where `qun_id` = ?"
+	// 根据群 id 获取群
+	SelectQunById = "SELECT * FROM `qun` where `id` = ?"
 )
 
 // 群结构.
@@ -91,6 +93,7 @@ func (device) CreateQun(w http.ResponseWriter, r *http.Request) {
 		memberId := member["uid"].(string)
 
 		if creatorId == memberId {
+			// 创建者后面会单独处理
 			continue
 		}
 
@@ -307,4 +310,24 @@ func getUserNamessInQun(qunId string) ([]string, error) {
 	}
 
 	return ret, nil
+}
+
+func getQunById(qunId string) (*Qun, error) {
+	row, err := MySQL.QueryRow(SelectQunById, qunId)
+	if err != nil {
+		glog.Error(err)
+
+		return nil, err
+	}
+	defer row.Close()
+
+	qun := Qun{}
+
+	if err := row.Scan(&qun.Id, &qun.CreatorId, &qun.Name, &qun.Description, &qun.MaxMember, &qun.Avatar, &qun.Created, &qun.Updated); err != nil {
+		glog.Error(err)
+
+		return nil, err
+	}
+
+	return &qun, nil
 }
