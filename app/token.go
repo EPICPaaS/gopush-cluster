@@ -103,9 +103,9 @@ func getUserByToken(token string) *member {
 	uid := token[:idx]
 	// TODO: validate token
 
-	expireTime := int64(Conf.TokenExpire) + time.Now().Unix()
+	now := time.Now().Unix()
 
-	values, err := redis.Values(conn.Do("ZRANGEBYSCORE", "token", "-inf", fmt.Sprintf("%d", expireTime), "WITHSCORES"))
+	values, err := redis.Values(conn.Do("ZRANGEBYSCORE", "token", "-inf", fmt.Sprintf("%d", now), "WITHSCORES"))
 	if err != nil {
 		glog.Error(err)
 
@@ -131,7 +131,7 @@ func getUserByToken(token string) *member {
 			continue
 		}
 
-		if rt.Expire < expireTime { // 如果该令牌已经过期
+		if rt.Expire < now { // 如果该令牌已经过期
 			expires[rt.Token] = expire
 		}
 	}
