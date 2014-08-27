@@ -73,7 +73,6 @@ func (device) Push(w http.ResponseWriter, r *http.Request) {
 
 		if nil != err {
 			baseRes.Ret = InternalErr
-			glog.Error(err)
 
 			return
 		}
