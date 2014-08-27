@@ -51,6 +51,7 @@ type QunUser struct {
 func (device) CreateQun(w http.ResponseWriter, r *http.Request) {
 	if r.Method != "POST" {
 		http.Error(w, "Method Not Allowed", 405)
+
 		return
 	}
 
@@ -63,6 +64,7 @@ func (device) CreateQun(w http.ResponseWriter, r *http.Request) {
 	if err != nil {
 		baseRes.Ret = ParamErr
 		glog.Errorf("ioutil.ReadAll() failed (%s)", err.Error())
+
 		return
 	}
 	body = string(bodyBytes)
@@ -72,10 +74,20 @@ func (device) CreateQun(w http.ResponseWriter, r *http.Request) {
 	if err := json.Unmarshal(bodyBytes, &args); err != nil {
 		baseRes.ErrMsg = err.Error()
 		baseRes.Ret = ParamErr
+
 		return
 	}
 
+	token := baseReq["token"].(string)
+
 	// TODO: token 校验
+	user := getUserByToken(token)
+
+	if nil == user {
+		baseRes.Ret = AuthErr
+
+		return
+	}
 
 	now := time.Now()
 
