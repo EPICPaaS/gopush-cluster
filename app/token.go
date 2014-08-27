@@ -14,9 +14,8 @@ import (
 
 var RedisNoConnErr = errors.New("can't get a redis conn")
 
-// Struct for delele token.
 type RedisDelToken struct {
-	expires []int64
+	expires map[string]int64
 }
 
 type redisStorage struct {
@@ -81,16 +80,64 @@ func InitRedisStorage() {
 
 	ring.Bake()
 	rs = &redisStorage{pool: redisPool, ring: ring, delCH: make(chan *RedisDelToken, 10240)}
+	go rs.clean()
 
 	glog.Info("Redis connected")
 
-	// TODO: token clean: go redis.clean()
 }
 
 // 根据令牌返回用户.
 func getUserByToken(token string) *member {
+	conn := rs.getConn("token")
+	if conn == nil {
+		return nil, RedisNoConnErr
+	}
+	defer conn.Close()
+
 	uid := token[:strings.Index(token, "_")]
 	// TODO: validate token
+
+	expireTime := int64(Conf.TokenExpire) + time.Now().Unix()
+
+	values, err := redis.Values(conn.Do("ZRANGEBYSCORE", "token", "-inf", fmt.Sprintf("%d", expireTime), "WITHSCORES"))
+	if err != nil {
+		glog.Error(err)
+
+		return nil
+	}
+
+	expires := map[string]int64{}
+
+	for len(values) > 0 {
+		expire := int64(0)
+		b := []byte{}
+		values, err = redis.Scan(values, &b, &expire)
+		if err != nil {
+			glog.Errorf("redis.Scan() error(%v)", err)
+			return nil, err
+		}
+
+		rt := &RedisToken{}
+		if err := json.Unmarshal(b, rt); err != nil {
+			glog.Errorf("json.Unmarshal(\"%s\", rt) error(%v)", string(b), err)
+			expires[rt.Token] = expire // 转 JSON 异常的也认为过期
+
+			continue
+		}
+
+		if rt.Expire < expireTime { // 如果该令牌已经过期
+			glog.Warningf("token [%s] expired", rt.Token)
+			expires[rt.Token] = expire
+		}
+	}
+
+	if len(expires) > 0 {
+		select {
+		case rs.delCH <- &RedisDelToken{expires}:
+		default:
+			glog.Warning("token channel is full")
+		}
+	}
 
 	return getUserByUid(uid)
 }
@@ -135,6 +182,7 @@ func genToken(user *member) (string, error) {
 	return token, nil
 }
 
+// 获取 Redis 连接.
 func (s *redisStorage) getConn(key string) redis.Conn {
 	if len(s.pool) == 0 {
 		return nil
@@ -150,4 +198,44 @@ func (s *redisStorage) getConn(key string) redis.Conn {
 	glog.V(5).Infof("key: \"%s\" hit redis node: \"%s\"", key, node)
 
 	return p.Get()
+}
+
+// 清理过期令牌.
+func (s *RedisStorage) clean() {
+	for {
+		info := <-s.delCH
+		conn := s.getConn("token")
+
+		if conn == nil {
+			glog.Warning("get redis connection nil")
+			continue
+		}
+
+		for token, expire := range info.expires {
+			if err := conn.Send("ZREMRANGEBYSCORE", "token", expire, expire); err != nil {
+				glog.Errorf("conn.Send(\"ZREMRANGEBYSCORE\", \"%s\", %d, %d) error(%v)", "token", expire, expire, err)
+				conn.Close()
+				continue
+			}
+
+			glog.V(3).Infof("Token [%s] expired", token)
+		}
+
+		if err := conn.Flush(); err != nil {
+			glog.Errorf("conn.Flush() error(%v)", err)
+			conn.Close()
+			continue
+		}
+
+		for _, _ = range info.expires {
+			_, err := conn.Receive()
+			if err != nil {
+				glog.Errorf("conn.Receive() error(%v)", err)
+				conn.Close()
+				continue
+			}
+		}
+
+		conn.Close()
+	}
 }
