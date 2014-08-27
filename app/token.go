@@ -171,7 +171,31 @@ func getUserByToken(token string) *member {
 		}
 
 		// 再添加
-		genToken(ret)
+		expire := int64(Conf.TokenExpire) + time.Now().Unix()
+
+		rt := &RedisToken{token, expire}
+		m, err := json.Marshal(rt)
+
+		if err != nil {
+			glog.Errorf("json.Marshal(\"%v\") error(%v)", rt, err)
+			return nil
+		}
+
+		if err := conn.Send("ZADD", "token", expire, m); err != nil {
+			glog.Errorf("conn.Send(\"ZADD\", \"%s\", %d, \"%s\") error(%v)", "token", expire, string(m), err)
+			return nil
+		}
+
+		if err := conn.Flush(); err != nil {
+			glog.Errorf("conn.Flush() error(%v)", err)
+			return nil
+		}
+
+		_, err = conn.Receive()
+		if err != nil {
+			glog.Errorf("conn.Receive() error(%v)", err)
+			return nil
+		}
 	}
 
 	return ret
