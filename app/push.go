@@ -160,7 +160,7 @@ func getToUserNames(toUserName string) (userNames []string, pushType string) {
 		qunId := toUserName[:len(toUserName)-len(QUN_SUFFIX)]
 
 		glog.Info(qunId)
-		userNames, err := getUserNamessInQun(qunId)
+		userNames, err := getUserNamesInQun(qunId)
 
 		if nil != err {
 			return []string{}, QUN_SUFFIX

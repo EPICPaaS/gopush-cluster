@@ -294,7 +294,8 @@ func getUserIdsInQun(qunId string) ([]string, error) {
 	return ret, nil
 }
 
-func getUserNamessInQun(qunId string) ([]string, error) {
+// 在数据库中查询群内用户发送 key.
+func getUserNamesInQun(qunId string) ([]string, error) {
 	ret := []string{}
 
 	ids, err := getUserIdsInQun(qunId)
@@ -312,6 +313,7 @@ func getUserNamessInQun(qunId string) ([]string, error) {
 	return ret, nil
 }
 
+// 在数据库中查询群.
 func getQunById(qunId string) (*Qun, error) {
 	row := MySQL.QueryRow(SelectQunById, qunId)
 
