@@ -92,7 +92,7 @@ func getUserByToken(token string) *member {
 	uid := token[:strings.Index(token, "_")]
 	// TODO: validate token
 
-	return getUserByCode(uid)
+	return getUserByUid(uid)
 }
 
 // 令牌生成.

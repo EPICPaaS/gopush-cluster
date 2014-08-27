@@ -1,7 +1,6 @@
 package app
 
 import (
-	"container/list"
 	"database/sql"
 	"encoding/json"
 	"github.com/golang/glog"
@@ -34,15 +33,26 @@ type member struct {
 	Email       string    `json:""`
 }
 
+func getUserByUid(uid string) *member {
+	return getUserByField("id", uid)
+}
+
 func getUserByCode(code string) *member {
 	isEmail := false
 	if strings.LastIndex(code, "@") > -1 {
 		isEmail = true
 	}
-	sql := "select id, name, nickname, status, avatar from user where name=?"
+	fieldName := "name"
 	if isEmail {
-		sql = "select id, name, nickname, status, avatar from user where email=?"
+		fieldName = "email"
 	}
+	return getUserByField(fieldName, code)
+}
+
+func getUserByField(fieldName, fieldArg string) *member {
+
+	sql := "select id, name, nickname, status, avatar, tenant_id, name_py, name_quanpin from user where " + fieldName + "=?"
+
 	smt, err := MySQL.Prepare(sql)
 	if smt != nil {
 		defer smt.Close()
@@ -54,7 +64,7 @@ func getUserByCode(code string) *member {
 		return nil
 	}
 
-	row, err := smt.Query(code)
+	row, err := smt.Query(fieldArg)
 	if row != nil {
 		defer row.Close()
 	} else {
@@ -63,7 +73,11 @@ func getUserByCode(code string) *member {
 
 	for row.Next() {
 		rec := member{}
-		row.Scan(&rec.Uid, &rec.Name, &rec.NickName, &rec.Status, &rec.Avatar)
+		err = row.Scan(&rec.Uid, &rec.Name, &rec.NickName, &rec.Status, &rec.Avatar, &rec.TenantId, &rec.PYInitial, &rec.PYQuanPin)
+		if err != nil {
+			glog.Error(err)
+		}
+
 		rec.UserName = rec.Uid + USER_SUFFIX
 		return &rec
 	}
@@ -212,7 +226,8 @@ func getUserListByOrgId(id string) members {
 	ret := members{}
 	for row.Next() {
 		rec := new(member)
-		row.Scan(&rec.Uid, &rec.UserName, &rec.NickName, &rec.Status)
+		row.Scan(&rec.Uid, &rec.Name, &rec.NickName, &rec.Status)
+		rec.UserName = rec.Uid + USER_SUFFIX
 		ret = append(ret, rec)
 	}
 	return ret
@@ -571,40 +586,43 @@ func isExists(id string) (bool, string) {
 }
 
 func (device) GetOrgInfo(w http.ResponseWriter, r *http.Request) {
-	//if r.Method != "POST" {
-	//	http.Error(w, "Method Not Allowed", 405)
-	//	return
-	//}
+	if r.Method != "POST" {
+		http.Error(w, "Method Not Allowed", 405)
+		return
+	}
 	baseRes := map[string]interface{}{"ret": OK, "errMsg": ""}
 	body := ""
 	res := map[string]interface{}{"baseResponse": baseRes}
 	defer RetPWriteJSON(w, r, res, &body, time.Now())
 
-	//bodyBytes, err := ioutil.ReadAll(r.Body)
-	//if err != nil {
-	//	res["ret"] = ParamErr
-	//	glog.Errorf("ioutil.ReadAll() failed (%s)", err.Error())
-	//	return
-	//}
-	//body = string(bodyBytes)
+	bodyBytes, err := ioutil.ReadAll(r.Body)
+	if err != nil {
+		res["ret"] = ParamErr
+		glog.Errorf("ioutil.ReadAll() failed (%s)", err.Error())
+		return
+	}
+	body = string(bodyBytes)
 
-	//var args map[string]interface{}
+	var args map[string]interface{}
 
-	//if err := json.Unmarshal(bodyBytes, &args); err != nil {
-	//	baseRes["errMsg"] = err.Error()
-	//	baseRes["ret"] = ParamErr
-	//	return
-	//}
+	if err := json.Unmarshal(bodyBytes, &args); err != nil {
+		baseRes["errMsg"] = err.Error()
+		baseRes["ret"] = ParamErr
+		return
+	}
 
-	//baseReq := args["baseRequest"].(map[string]interface{})
+	baseReq := args["baseRequest"].(map[string]interface{})
 
-	//uid := int(baseReq["Uid"].(float64))
-	//deviceId := baseReq["DeviceID"]
-	//userName := args["userName"]
-	//password := args["password"]
+	uid := baseReq["uid"].(string)
+	deviceId := baseReq["deviceID"]
+	userName := args["userName"]
+	password := args["password"]
+	token := baseReq["token"].(string)
 
-	//glog.V(1).Infof("Uid [%d], DeviceId [%s], userName [%s], password [%s]",
-	//	uid, deviceId, userName, password)
+	currentUser := getUserByToken(token)
+
+	glog.V(1).Infof("Uid [%s], DeviceId [%s], userName [%s], password [%s]",
+		uid, deviceId, userName, password)
 
 	//// TODO: 登录逻辑
 
@@ -625,19 +643,19 @@ func (device) GetOrgInfo(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	row, err := smt.Query("testTanantId")
+	row, err := smt.Query(currentUser.TenantId)
 	if row != nil {
 		defer row.Close()
 	} else {
 		return
 	}
-	data := list.New()
+	data := members{}
 	for row.Next() {
 		rec := new(member)
 		row.Scan(&rec.Uid, &rec.NickName, &rec.parentId, &rec.sort)
 		rec.Uid = rec.Uid
 		rec.UserName = rec.Uid + ORG_SUFFIX
-		data.PushBack(rec)
+		data = append(data, rec)
 	}
 	err = row.Err()
 	if err != nil {
@@ -647,9 +665,8 @@ func (device) GetOrgInfo(w http.ResponseWriter, r *http.Request) {
 	}
 
 	unitMap := map[string]*member{}
-	for ele := data.Front(); ele != nil; ele = ele.Next() {
-		rec := ele.Value.(*member)
-		unitMap[rec.Uid] = rec
+	for _, ele := range data {
+		unitMap[ele.Uid] = ele
 	}
 
 	rootList := []*member{}
@@ -686,7 +703,7 @@ func (device) GetOrgInfo(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	row, err = smt.Query("testTanantId")
+	row, err = smt.Query(currentUser.TenantId)
 	if row != nil {
 		defer row.Close()
 	} else {
@@ -695,7 +712,6 @@ func (device) GetOrgInfo(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	data = list.New()
 	for row.Next() {
 		row.Scan(&tenant.Uid, &tenant.UserName, &tenant.NickName)
 		tenant.UserName = tenant.Uid + TENANT_SUFFIX
@@ -716,7 +732,7 @@ func (device) GetOrgInfo(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	row, err = smt.Query("testuser")
+	row, err = smt.Query(currentUser.Uid)
 	if row != nil {
 		defer row.Close()
 	} else {
@@ -725,7 +741,6 @@ func (device) GetOrgInfo(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	data = list.New()
 	for row.Next() {
 		userOgnization := ""
 		row.Scan(&userOgnization)
@@ -733,11 +748,12 @@ func (device) GetOrgInfo(w http.ResponseWriter, r *http.Request) {
 		break
 	}
 
-	res["starMemberCount"] = 2
-	starMembers := make(members, 2)
+	res["starMemberCount"] = 0
+	/*
+		starMembers := make(members, 2)
 
-	starMembers[0] = &member{Uid: "11222", UserName: "11222@user", NickName: "hehe"}
-	starMembers[1] = &member{Uid: "22233", UserName: "22233@user", NickName: "haha"}
-	res["starMemberList"] = starMembers
+		starMembers[0] = &member{Uid: "11222", UserName: "11222@user", NickName: "hehe"}
+		starMembers[1] = &member{Uid: "22233", UserName: "22233@user", NickName: "haha"}
+		res["starMemberList"] = starMembers*/
 	return
 }
