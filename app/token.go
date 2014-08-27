@@ -1,9 +1,7 @@
 package app
 
 import (
-	"encoding/json"
 	"errors"
-	"fmt"
 	"github.com/EPICPaaS/go-uuid/uuid"
 	"github.com/EPICPaaS/gopush-cluster/ketama"
 	"github.com/garyburd/redigo/redis"
@@ -74,7 +72,7 @@ func InitRedisStorage() {
 	}
 
 	ring.Bake()
-	rs = &redisStorage{pool: redisPool, ring: ring, delCH: make(chan *RedisDelToken, 10240)}
+	rs = &redisStorage{pool: redisPool, ring: ring}
 
 	glog.Info("Redis connected")
 
@@ -112,7 +110,7 @@ func getUserByToken(token string) *member {
 		glog.Error(err)
 	}
 
-	_, err = conn.Receive()
+	_, err := conn.Receive()
 	if err != nil {
 		glog.Error(err)
 	}
@@ -149,7 +147,7 @@ func genToken(user *member) (string, error) {
 		return "", err
 	}
 
-	_, err = conn.Receive()
+	_, err := conn.Receive()
 	if err != nil {
 		glog.Error(err)
 		return "", err
