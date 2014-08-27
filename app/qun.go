@@ -313,16 +313,9 @@ func getUserNamessInQun(qunId string) ([]string, error) {
 }
 
 func getQunById(qunId string) (*Qun, error) {
-	row, err := MySQL.QueryRow(SelectQunById, qunId)
-	if err != nil {
-		glog.Error(err)
-
-		return nil, err
-	}
-	defer row.Close()
+	row := MySQL.QueryRow(SelectQunById, qunId)
 
 	qun := Qun{}
-
 	if err := row.Scan(&qun.Id, &qun.CreatorId, &qun.Name, &qun.Description, &qun.MaxMember, &qun.Avatar, &qun.Created, &qun.Updated); err != nil {
 		glog.Error(err)
 
