@@ -87,7 +87,7 @@ func InitRedisStorage() {
 
 }
 
-// 根据令牌返回用户.
+// 根据令牌返回用户. 如果该令牌可用，刷新其过期时间.
 func getUserByToken(token string) *member {
 	conn := rs.getConn("token")
 	if conn == nil {
@@ -101,7 +101,6 @@ func getUserByToken(token string) *member {
 	}
 
 	uid := token[:idx]
-	// TODO: validate token
 
 	now := time.Now().Unix()
 
@@ -144,7 +143,38 @@ func getUserByToken(token string) *member {
 		}
 	}
 
-	return getUserByUid(uid)
+	ret := getUserByUid(uid)
+	if nil == ret {
+		return nil
+	}
+
+	cur := expires[token]
+	if nil != cur {
+		// 刷新令牌
+		glog.V(3).Infof("Refresh token [%s]", token)
+
+		// 先删除
+		if err := conn.Send("ZREM", "token", cur); err != nil {
+			glog.Errorf("conn.Send(\"ZREM\", \"%s\", %d) error(%v)", "token", expire, err)
+			return "", err
+		}
+
+		if err := conn.Flush(); err != nil {
+			glog.Errorf("conn.Flush() error(%v)", err)
+			return "", err
+		}
+
+		_, err = conn.Receive()
+		if err != nil {
+			glog.Errorf("conn.Receive() error(%v)", err)
+			return "", err
+		}
+
+		// 再添加
+		genToken(ret)
+	}
+
+	return ret
 }
 
 // 令牌生成.
