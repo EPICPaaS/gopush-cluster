@@ -3,6 +3,7 @@ package app
 import (
 	"encoding/json"
 	"errors"
+	"fmt"
 	"github.com/EPICPaaS/go-uuid/uuid"
 	"github.com/EPICPaaS/gopush-cluster/ketama"
 	"github.com/garyburd/redigo/redis"
@@ -90,11 +91,16 @@ func InitRedisStorage() {
 func getUserByToken(token string) *member {
 	conn := rs.getConn("token")
 	if conn == nil {
-		return nil, RedisNoConnErr
+		return nil
 	}
 	defer conn.Close()
 
-	uid := token[:strings.Index(token, "_")]
+	idx := strings.Index(token, "_")
+	if -1 == idx {
+		return nil
+	}
+
+	uid := token[:idx]
 	// TODO: validate token
 
 	expireTime := int64(Conf.TokenExpire) + time.Now().Unix()
@@ -114,7 +120,7 @@ func getUserByToken(token string) *member {
 		values, err = redis.Scan(values, &b, &expire)
 		if err != nil {
 			glog.Errorf("redis.Scan() error(%v)", err)
-			return nil, err
+			return nil
 		}
 
 		rt := &RedisToken{}
@@ -126,7 +132,6 @@ func getUserByToken(token string) *member {
 		}
 
 		if rt.Expire < expireTime { // 如果该令牌已经过期
-			glog.Warningf("token [%s] expired", rt.Token)
 			expires[rt.Token] = expire
 		}
 	}
@@ -152,7 +157,7 @@ func genToken(user *member) (string, error) {
 
 	defer conn.Close()
 
-	expire := int64(Conf.TokenExpire + time.Now().Unix())
+	expire := int64(Conf.TokenExpire) + time.Now().Unix()
 	token := user.Uid + "_" + uuid.New()
 
 	rt := &RedisToken{token, expire}
@@ -201,7 +206,7 @@ func (s *redisStorage) getConn(key string) redis.Conn {
 }
 
 // 清理过期令牌.
-func (s *RedisStorage) clean() {
+func (s *redisStorage) clean() {
 	for {
 		info := <-s.delCH
 		conn := s.getConn("token")
