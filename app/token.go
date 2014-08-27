@@ -155,19 +155,19 @@ func getUserByToken(token string) *member {
 
 		// 先删除
 		if err := conn.Send("ZREM", "token", cur); err != nil {
-			glog.Errorf("conn.Send(\"ZREM\", \"%s\", %d) error(%v)", "token", expire, err)
-			return "", err
+			glog.Errorf("conn.Send(\"ZREM\", \"%s\", %d) error(%v)", "token", cur, err)
+			return nil
 		}
 
 		if err := conn.Flush(); err != nil {
 			glog.Errorf("conn.Flush() error(%v)", err)
-			return "", err
+			return nil
 		}
 
 		_, err = conn.Receive()
 		if err != nil {
 			glog.Errorf("conn.Receive() error(%v)", err)
-			return "", err
+			return nil
 		}
 
 		// 再添加
