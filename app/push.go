@@ -64,7 +64,6 @@ func (device) Push(w http.ResponseWriter, r *http.Request) {
 	if strings.HasSuffix(toUserName, USER_SUFFIX) { // 如果是推人
 		m := getUserByUid(fromUserID)
 
-		msg["content"] = fromUserName + "|" + m.Name + "|" + m.NickName + "&&" + msg["content"].(string)
 		msg["fromDisplayName"] = m.NickName
 	} else if strings.HasSuffix(toUserName, QUN_SUFFIX) { // 如果是推群
 		m := getUserByUid(fromUserID)

@@ -60,7 +60,7 @@ func InitRedisStorage() {
 		}
 
 		tmp := addr
-		// WARN: closures use
+
 		redisPool[nw[0]] = &redis.Pool{
 			MaxIdle:     Conf.RedisMaxIdle,
 			MaxActive:   Conf.RedisMaxActive,
@@ -105,7 +105,7 @@ func genToken(user *member) (string, error) {
 
 	defer conn.Close()
 
-	expire := int64(Conf.TokenExpire) + time.Now().Unix()
+	expire := int64(Conf.TokenExpire + time.Now().Unix())
 	token := user.Uid + "_" + uuid.New()
 
 	rt := &RedisToken{token, expire}
