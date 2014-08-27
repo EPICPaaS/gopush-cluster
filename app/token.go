@@ -88,6 +88,25 @@ func getUserByToken(token string) *member {
 
 	defer conn.Close()
 
+	if err := conn.Send("EXISTS", token); err != nil {
+		glog.Error(err)
+	}
+
+	if err := conn.Flush(); err != nil {
+		glog.Error(err)
+	}
+
+	reply, err := conn.Receive()
+	if err != nil {
+		glog.Error(err)
+
+		return nil
+	}
+
+	if 0 == reply {
+		return nil
+	}
+
 	idx := strings.Index(token, "_")
 	if -1 == idx {
 		return nil
@@ -110,7 +129,7 @@ func getUserByToken(token string) *member {
 		glog.Error(err)
 	}
 
-	_, err := conn.Receive()
+	_, err = conn.Receive()
 	if err != nil {
 		glog.Error(err)
 	}
