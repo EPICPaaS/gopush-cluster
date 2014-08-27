@@ -103,7 +103,7 @@ func getUserByToken(token string) *member {
 		return nil
 	}
 
-	if 0 == reply {
+	if 0 == reply { // 令牌不存在
 		return nil
 	}
 
@@ -121,7 +121,7 @@ func getUserByToken(token string) *member {
 
 	confExpire := int64(Conf.TokenExpire)
 
-	if err := conn.Send("EXPIRE", token, confExpire); err != nil {
+	if err := conn.Send("EXPIRE", token, confExpire); err != nil { // 刷新令牌
 		glog.Error(err)
 	}
 
