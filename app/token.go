@@ -148,8 +148,8 @@ func getUserByToken(token string) *member {
 		return nil
 	}
 
-	cur := expires[token]
-	if nil != cur {
+	cur, exists := expires[token]
+	if exists {
 		// 刷新令牌
 		glog.V(3).Infof("Refresh token [%s]", token)
 
