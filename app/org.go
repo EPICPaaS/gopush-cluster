@@ -624,18 +624,18 @@ func (device) GetOrgInfo(w http.ResponseWriter, r *http.Request) {
 	deviceId := baseReq["deviceID"]
 	userName := args["userName"]
 	password := args["password"]
-	token := baseReq["token"].(string)
 
+	// Token 校验
+	token := baseReq["token"].(string)
 	currentUser := getUserByToken(token)
+	if nil == currentUser {
+		baseRes["ret"] = AuthErr
+
+		return
+	}
 
 	glog.V(1).Infof("Uid [%s], DeviceId [%s], userName [%s], password [%s]",
 		uid, deviceId, userName, password)
-
-	//// TODO: 登录逻辑
-
-	//// 返回 key、token
-	//res["Uid"] = "ukey"
-	//res["Token"] = "utoken"
 
 	smt, err := MySQL.Prepare("select id, name,  parent_id, sort from org where tenant_id=?")
 	if smt != nil {

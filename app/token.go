@@ -13,10 +13,6 @@ import (
 
 var RedisNoConnErr = errors.New("can't get a redis conn")
 
-type RedisDelToken struct {
-	expires map[string]int64
-}
-
 type redisStorage struct {
 	pool map[string]*redis.Pool
 	ring *ketama.HashRing
@@ -75,7 +71,6 @@ func InitRedisStorage() {
 	rs = &redisStorage{pool: redisPool, ring: ring}
 
 	glog.Info("Redis connected")
-
 }
 
 // 根据令牌返回用户. 如果该令牌可用，刷新其过期时间.
@@ -103,7 +98,7 @@ func getUserByToken(token string) *member {
 		return nil
 	}
 
-	if 0 == reply { // 令牌不存在
+	if 0 == reply.(int64) { // 令牌不存在
 		return nil
 	}
 
@@ -114,6 +109,7 @@ func getUserByToken(token string) *member {
 
 	uid := token[:idx]
 
+	// 从数据库加载用户
 	ret := getUserByUid(uid)
 	if nil == ret {
 		return nil
@@ -121,7 +117,8 @@ func getUserByToken(token string) *member {
 
 	confExpire := int64(Conf.TokenExpire)
 
-	if err := conn.Send("EXPIRE", token, confExpire); err != nil { // 刷新令牌
+	// 刷新令牌
+	if err := conn.Send("EXPIRE", token, confExpire); err != nil {
 		glog.Error(err)
 	}
 
@@ -139,7 +136,7 @@ func getUserByToken(token string) *member {
 
 // 令牌生成.
 func genToken(user *member) (string, error) {
-	conn := rs.getConn(user.Uid)
+	conn := rs.getConn("token")
 
 	if conn == nil {
 		return "", RedisNoConnErr
@@ -151,11 +148,13 @@ func genToken(user *member) (string, error) {
 	expire := confExpire + time.Now().Unix()
 	token := user.Uid + "_" + uuid.New()
 
+	// 使用 Redis Hash 结构保存用户令牌值
 	if err := conn.Send("HSET", token, "expire", expire); err != nil {
 		glog.Error(err)
 		return "", err
 	}
 
+	// 设置令牌过期时间
 	if err := conn.Send("EXPIRE", token, confExpire); err != nil {
 		glog.Error(err)
 		return "", err
@@ -194,7 +193,7 @@ func (s *redisStorage) getConn(key string) redis.Conn {
 		return nil
 	}
 
-	glog.V(5).Infof("key: \"%s\" hit redis node: \"%s\"", key, node)
+	glog.V(10).Infof("key: \"%s\" hit redis node: \"%s\"", key, node)
 
 	return p.Get()
 }

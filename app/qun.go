@@ -79,6 +79,8 @@ func (device) CreateQun(w http.ResponseWriter, r *http.Request) {
 	}
 
 	baseReq := args["baseRequest"].(map[string]interface{})
+
+	// Token 校验
 	token := baseReq["token"].(string)
 
 	user := getUserByToken(token)
