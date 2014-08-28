@@ -28,10 +28,6 @@ const (
 	httpReadTimeout = 30 //seconds
 )
 
-func init() {
-	glog.Info("init http")
-}
-
 // StartHTTP start listen http.
 func StartHTTP() {
 	// external
