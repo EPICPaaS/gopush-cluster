@@ -35,6 +35,7 @@ const (
 	ORG_SUFFIX    = "@org"
 	QUN_SUFFIX    = "@qun"
 	USER_SUFFIX   = "@user"
+	APP_SUFFIX    = "@app"
 )
 
 // InitConfig initialize config file path
