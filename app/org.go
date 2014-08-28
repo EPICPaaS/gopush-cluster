@@ -25,12 +25,13 @@ type member struct {
 	StarFriend  int       `json:"starFriend"`
 	Avatar      string    `json:"avatar"`
 	parentId    string    `json:"parentId"`
-	email       string    `json:"email"`
 	sort        int       `json:"sort"`
 	rand        int       `json:"rand"`
 	Password    string    `json:"password"`
 	TenantId    string    `json:"tenantId"`
-	Email       string    `json:""`
+	Email       string    `json:"email"`
+	Mobile      string    `json:"mobile"`
+	Address     string    `json:"address"`
 }
 
 func getUserByUid(uid string) *member {
@@ -51,7 +52,7 @@ func getUserByCode(code string) *member {
 
 func getUserByField(fieldName, fieldArg string) *member {
 
-	sql := "select id, name, nickname, status, avatar, tenant_id, name_py, name_quanpin from user where " + fieldName + "=?"
+	sql := "select id, name, nickname, status, avatar, tenant_id, name_py, name_quanpin, mobile, address from user where " + fieldName + "=?"
 
 	smt, err := MySQL.Prepare(sql)
 	if smt != nil {
@@ -73,7 +74,7 @@ func getUserByField(fieldName, fieldArg string) *member {
 
 	for row.Next() {
 		rec := member{}
-		err = row.Scan(&rec.Uid, &rec.Name, &rec.NickName, &rec.Status, &rec.Avatar, &rec.TenantId, &rec.PYInitial, &rec.PYQuanPin)
+		err = row.Scan(&rec.Uid, &rec.Name, &rec.NickName, &rec.Status, &rec.Avatar, &rec.TenantId, &rec.PYInitial, &rec.PYQuanPin, &rec.Mobile, &rec.Address)
 		if err != nil {
 			glog.Error(err)
 		}
@@ -178,7 +179,7 @@ func sortMemberList(lst []*member) {
 }
 
 func getUserListByTenantId(id string) members {
-	smt, err := MySQL.Prepare("select id, name, nickname, status from user where tenant_id=?")
+	smt, err := MySQL.Prepare("select id, name, nickname, status, avatar, tenant_id, name_py, name_quanpin, mobile, address from user where tenant_id=?")
 	if smt != nil {
 		defer smt.Close()
 	} else {
@@ -198,7 +199,10 @@ func getUserListByTenantId(id string) members {
 	ret := members{}
 	for row.Next() {
 		rec := new(member)
-		row.Scan(&rec.Uid, &rec.UserName, &rec.NickName, &rec.Status)
+		err = row.Scan(&rec.Uid, &rec.Name, &rec.NickName, &rec.Status, &rec.Avatar, &rec.TenantId, &rec.PYInitial, &rec.PYQuanPin, &rec.Mobile, &rec.Address)
+		if err != nil {
+			glog.Error(err)
+		}
 		ret = append(ret, rec)
 	}
 
@@ -206,7 +210,7 @@ func getUserListByTenantId(id string) members {
 }
 
 func getUserListByOrgId(id string) members {
-	smt, err := MySQL.Prepare("select id, name, nickname, status from user where id in (select user_id from org_user where org_id=?)")
+	smt, err := MySQL.Prepare("select id, name, nickname, status, avatar, tenant_id, name_py, name_quanpin, mobile, address from user where id in (select user_id from org_user where org_id=?)")
 	if smt != nil {
 		defer smt.Close()
 	} else {
@@ -226,7 +230,10 @@ func getUserListByOrgId(id string) members {
 	ret := members{}
 	for row.Next() {
 		rec := new(member)
-		row.Scan(&rec.Uid, &rec.Name, &rec.NickName, &rec.Status)
+		err = row.Scan(&rec.Uid, &rec.Name, &rec.NickName, &rec.Status, &rec.Avatar, &rec.TenantId, &rec.PYInitial, &rec.PYQuanPin, &rec.Mobile, &rec.Address)
+		if err != nil {
+			glog.Error(err)
+		}
 		rec.UserName = rec.Uid + USER_SUFFIX
 		ret = append(ret, rec)
 	}
