@@ -103,7 +103,7 @@ func getUserByToken(token string) *member {
 		return nil
 	}
 
-	if 0 == reply { // 令牌不存在
+	if 0 == reply.(int64) { // 令牌不存在
 		return nil
 	}
 
@@ -139,7 +139,7 @@ func getUserByToken(token string) *member {
 
 // 令牌生成.
 func genToken(user *member) (string, error) {
-	conn := rs.getConn(user.Uid)
+	conn := rs.getConn("token")
 
 	if conn == nil {
 		return "", RedisNoConnErr
