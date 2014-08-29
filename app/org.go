@@ -87,7 +87,7 @@ func getUserByField(fieldName, fieldArg string) *member {
 }
 
 // 客户端设备登录.
-func (device) Login(w http.ResponseWriter, r *http.Request) {
+func (*device) Login(w http.ResponseWriter, r *http.Request) {
 	if r.Method != "POST" {
 		http.Error(w, "Method Not Allowed", 405)
 		return
@@ -240,7 +240,7 @@ func getUserListByOrgId(id string) members {
 	return ret
 }
 
-func (device) GetOrgUserList(w http.ResponseWriter, r *http.Request) {
+func (*device) GetOrgUserList(w http.ResponseWriter, r *http.Request) {
 	baseRes := map[string]interface{}{"ret": OK, "errMsg": ""}
 
 	body := ""
@@ -289,7 +289,7 @@ func updateUser(member *member, tx *sql.Tx) error {
 	return err
 }
 
-func (device) SyncUser(w http.ResponseWriter, r *http.Request) {
+func (*device) SyncUser(w http.ResponseWriter, r *http.Request) {
 	baseRes := map[string]interface{}{"ret": OK, "errMsg": ""}
 	tx, err := MySQL.Begin()
 
@@ -337,7 +337,7 @@ func (device) SyncUser(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
-func (device) SyncOrg(w http.ResponseWriter, r *http.Request) {
+func (*device) SyncOrg(w http.ResponseWriter, r *http.Request) {
 	baseRes := map[string]interface{}{"ret": OK, "errMsg": ""}
 	tx, err := MySQL.Begin()
 
@@ -592,7 +592,7 @@ func isExists(id string) (bool, string) {
 	return false, ""
 }
 
-func (device) GetOrgInfo(w http.ResponseWriter, r *http.Request) {
+func (*device) GetOrgInfo(w http.ResponseWriter, r *http.Request) {
 	if r.Method != "POST" {
 		http.Error(w, "Method Not Allowed", 405)
 		return

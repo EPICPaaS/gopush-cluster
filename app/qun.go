@@ -48,7 +48,7 @@ type QunUser struct {
 }
 
 // 创建群.
-func (device) CreateQun(w http.ResponseWriter, r *http.Request) {
+func (*device) CreateQun(w http.ResponseWriter, r *http.Request) {
 	if r.Method != "POST" {
 		http.Error(w, "Method Not Allowed", 405)
 
@@ -153,7 +153,7 @@ func (device) CreateQun(w http.ResponseWriter, r *http.Request) {
 }
 
 // 获取群成员.
-func (device) GetUsersInQun(w http.ResponseWriter, r *http.Request) {
+func (*device) GetUsersInQun(w http.ResponseWriter, r *http.Request) {
 	if r.Method != "POST" {
 		http.Error(w, "Method Not Allowed", 405)
 		return

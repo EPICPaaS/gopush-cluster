@@ -5,12 +5,6 @@ import (
 	"net/http"
 )
 
-// 定义移动端操作结构
-type device struct{}
-
-// 声明移动端操作接口
-var Device = device{}
-
 // 用户二维码处理，返回用户信息 HTML.
 func UserErWeiMa(w http.ResponseWriter, r *http.Request) {
 	r.ParseForm()
@@ -24,7 +18,6 @@ func UserErWeiMa(w http.ResponseWriter, r *http.Request) {
 	if nil == user {
 		fmt.Fprintln(w, "")
 	} else {
-		// TODO: 完善显示用户信息
 		fmt.Fprintln(w, user.NickName)
 	}
 }
