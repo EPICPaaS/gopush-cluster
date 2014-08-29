@@ -48,6 +48,8 @@ type Config struct {
 	AdminBind            []string          `goconf:"base:admin.bind:,"`
 	AppBind              []string          `goconf:"base:app.bind:,"`
 	AppDBURL             string            `goconf:"base:app.dbURL"`
+	AppDBMaxIdleConns    int               `goconf:"base:app.dbMaxIdleConns"`
+	AppDBMaxOpenConns    int               `goconf:"base:app.dbMaxOpenConns"`
 	MaxProc              int               `goconf:"base:maxproc"`
 	PprofBind            []string          `goconf:"base:pprof.bind:,"`
 	User                 string            `goconf:"base:user"`

@@ -22,8 +22,11 @@ func InitDB() {
 		os.Exit(-1)
 	}
 
-	MySQL.SetMaxIdleConns(100)
-	MySQL.SetMaxOpenConns(500)
+	glog.Infof("DB max idle conns [%d]", Conf.AppDBMaxIdleConns)
+	glog.Infof("DB max open conns [%d]", Conf.AppDBMaxOpenConns)
+
+	MySQL.SetMaxIdleConns(Conf.AppDBMaxIdleConns)
+	MySQL.SetMaxOpenConns(Conf.AppDBMaxOpenConns)
 
 	glog.Info("DB connected")
 }
