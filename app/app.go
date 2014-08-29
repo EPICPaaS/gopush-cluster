@@ -24,6 +24,7 @@ func UserErWeiMa(w http.ResponseWriter, r *http.Request) {
 	if nil == user {
 		fmt.Fprintln(w, "")
 	} else {
+		// TODO: 完善显示用户信息
 		fmt.Fprintln(w, user.NickName)
 	}
 }

@@ -210,7 +210,12 @@ func getToUserNames(toUserName string) (userNames []string, pushType string) {
 		}
 
 		return userNames, TENANT_SUFFIX
-	} else { // 单推
+	} else if strings.HasSuffix(toUserName, USER_SUFFIX) { // 用户推
 		return []string{toUserName}, USER_SUFFIX
+	} else if strings.HasSuffix(toUserName, APP_SUFFIX) { // 应用推
+		// TODO: 应用推
+		return []string{}, APP_SUFFIX
+	} else {
+		return []string{}, "@UNDEFINDED"
 	}
 }
