@@ -109,10 +109,10 @@ func (device) Push(w http.ResponseWriter, r *http.Request) {
 	for _, userName := range toUserNames {
 		// userName 就是 gopush 的 key
 		key := userName
-		//glog.Error(userName)
 
-		//多推时接收端看到的接收人应该是目标接收者
+		// 看到的接收人应该是具体的目标接收者
 		msg["toUserName"] = userName
+
 		msgBytes, err := json.Marshal(msg)
 		if err != nil {
 			baseRes.Ret = ParamErr
@@ -120,9 +120,12 @@ func (device) Push(w http.ResponseWriter, r *http.Request) {
 
 			return
 		}
+
 		result := push(key, msgBytes, expire)
 		if OK != result {
 			baseRes.Ret = result
+
+			glog.Errorf("Push message failed [%v]", msg)
 
 			// 推送分发过程中失败不立即返回，继续下一个推送
 		}
