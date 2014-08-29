@@ -180,6 +180,8 @@ func (*device) GetUsersInQun(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	baseReq := args["baseRequest"].(map[string]interface{})
+
 	// Token 校验
 	token := baseReq["token"].(string)
 	user := getUserByToken(token)
