@@ -18,6 +18,7 @@ import (
        "token": ""
   	  },
       "content": "Test!",
+	  "expire": 600, // optional
 	  "toUserNames" : ["1@user", "2@user"]
    }
 */
@@ -60,7 +61,7 @@ func (*app) UserPush(w http.ResponseWriter, r *http.Request) {
 	msg["content"] = content
 
 	toUserNames := args["toUserNames"].([]interface{})
-	if len(toUserNames) > 1000 {
+	if len(toUserNames) > 1000 { // 一次最多只能推送 1000 人
 		baseRes.Ret = TooLong
 
 		return
@@ -68,12 +69,14 @@ func (*app) UserPush(w http.ResponseWriter, r *http.Request) {
 
 	// TODO: 根据 appId 获取应用信息
 	glog.Infof("AppId [%s]", appId)
+
+	msg["fromUserName"] = appId + APP_SUFFIX
 	fromDisplayName := "Test APP"
 
 	msg["fromDisplayName"] = fromDisplayName
 
 	// 消息过期时间（单位：秒）
-	exp := msg["expire"]
+	exp := args["expire"]
 	expire := 600
 	if nil != exp {
 		expire = int(exp.(float64))
