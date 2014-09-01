@@ -155,7 +155,6 @@ func (*device) Push(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	//baseReq := args["baseRequest"].(map[string]interface{})
 	msg := args["msg"].(map[string]interface{})
 	fromUserName := msg["fromUserName"].(string)
 	fromUserID := fromUserName[:strings.Index(fromUserName, "@")]
@@ -181,9 +180,6 @@ func (*device) Push(w http.ResponseWriter, r *http.Request) {
 		msg["fromDisplayName"] = qun.Name
 		msg["fromUserName"] = toUserName
 	} // TODO: 组织机构（部门/单位）推送消息体处理
-
-	// TODO: 发送信息验证（发送人是否合法、消息内容是否合法）
-	// TODO: 好友关系校验（不是好友不能发等业务校验）
 
 	// 消息过期时间（单位：秒）
 	exp := msg["expire"]
@@ -303,7 +299,7 @@ func getToUserNames(toUserName string) (userNames []string, pushType string) {
 	} else if strings.HasSuffix(toUserName, USER_SUFFIX) { // 用户推
 		return []string{toUserName}, USER_SUFFIX
 	} else if strings.HasSuffix(toUserName, APP_SUFFIX) { // 应用推
-		// TODO: 应用推
+		// 应用推
 		return []string{}, APP_SUFFIX
 	} else {
 		return []string{}, "@UNDEFINDED"
