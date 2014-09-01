@@ -53,6 +53,7 @@ func StartHTTP() {
 	appAppServeMux := http.NewServeMux()
 	appAppServeMux.HandleFunc("/app/client/device/login", app.Device.Login)
 	appAppServeMux.HandleFunc("/app/client/device/push", app.Device.Push)
+	appAppServeMux.HandleFunc("/app/client/app/user/push", app.App.UserPush)
 	appAppServeMux.HandleFunc("/app/client/device/getOrgInfo", app.Device.GetOrgInfo)
 	appAppServeMux.HandleFunc("/app/client/device/getOrgUserList", app.Device.GetOrgUserList)
 	appAppServeMux.HandleFunc("/app/client/device/syncOrg", app.Device.SyncOrg)

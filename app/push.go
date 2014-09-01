@@ -10,6 +10,88 @@ import (
 	"time"
 )
 
+// 应用端推送消息给用户.
+func (*app) UserPush(w http.ResponseWriter, r *http.Request) {
+	if r.Method != "POST" {
+		http.Error(w, "Method Not Allowed", 405)
+		return
+	}
+
+	baseRes := baseResponse{OK, ""}
+	body := ""
+	res := map[string]interface{}{"baseResponse": &baseRes}
+	defer RetPWriteJSON(w, r, res, &body, time.Now())
+
+	bodyBytes, err := ioutil.ReadAll(r.Body)
+	if err != nil {
+		baseRes.Ret = ParamErr
+		glog.Errorf("ioutil.ReadAll() failed (%s)", err.Error())
+		return
+	}
+	body = string(bodyBytes)
+
+	var args map[string]interface{}
+
+	if err := json.Unmarshal(bodyBytes, &args); err != nil {
+		baseRes.ErrMsg = err.Error()
+		baseRes.Ret = ParamErr
+		return
+	}
+
+	baseReq := args["baseRequest"].(map[string]interface{})
+
+	// TODO: Token 校验
+	appId := baseReq["appId"].(string)
+	// token := baseReq["token"].(string)
+
+	msg := map[string]interface{}{}
+	content := args["content"].(string)
+	toUserNames := args["toUserNames"].([]string)
+
+	// TODO: 根据 appId 获取应用信息
+	fromDisplayName := "Test APP"
+
+	msg["fromDisplayName"] = fromDisplayName
+
+	// 消息过期时间（单位：秒）
+	exp := msg["expire"]
+	expire := 600
+	if nil != exp {
+		expire = int(exp.(float64))
+	}
+
+	// 推送分发
+	for _, userName := range toUserNames {
+		// userName 就是 gopush 的 key
+		key := userName
+
+		// 看到的接收人应该是具体的目标接收者
+		msg["toUserName"] = userName
+
+		msgBytes, err := json.Marshal(msg)
+		if err != nil {
+			baseRes.Ret = ParamErr
+			glog.Error(err)
+
+			return
+		}
+
+		result := push(key, msgBytes, expire)
+		if OK != result {
+			baseRes.Ret = result
+
+			glog.Errorf("Push message failed [%v]", msg)
+
+			// 推送分发过程中失败不立即返回，继续下一个推送
+		}
+	}
+
+	res["msgID"] = "msgid"
+	res["clientMsgId"] = time.Now().UnixNano()
+
+	return
+}
+
 // 客户端设备推送消息.
 // 1. 单推
 // 2. 群推（@qun）
