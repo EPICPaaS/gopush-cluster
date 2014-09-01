@@ -11,6 +11,16 @@ import (
 )
 
 // 应用端推送消息给用户.
+/*
+   {
+     "baseRequest" : {
+  	   "appId" : "23622391649370202",
+       "token": ""
+  	  },
+      "content": "Test!",
+	  "toUserNames" : ["1@user", "2@user"]
+   }
+*/
 func (*app) UserPush(w http.ResponseWriter, r *http.Request) {
 	if r.Method != "POST" {
 		http.Error(w, "Method Not Allowed", 405)
@@ -45,10 +55,14 @@ func (*app) UserPush(w http.ResponseWriter, r *http.Request) {
 	// token := baseReq["token"].(string)
 
 	msg := map[string]interface{}{}
+
 	content := args["content"].(string)
-	toUserNames := args["toUserNames"].([]string)
+	msg["content"] = content
+
+	toUserNames := args["toUserNames"].([]interface{})
 
 	// TODO: 根据 appId 获取应用信息
+	glog.Infof("AppId [%s]", appId)
 	fromDisplayName := "Test APP"
 
 	msg["fromDisplayName"] = fromDisplayName
@@ -63,7 +77,7 @@ func (*app) UserPush(w http.ResponseWriter, r *http.Request) {
 	// 推送分发
 	for _, userName := range toUserNames {
 		// userName 就是 gopush 的 key
-		key := userName
+		key := userName.(string)
 
 		// 看到的接收人应该是具体的目标接收者
 		msg["toUserName"] = userName
@@ -85,9 +99,6 @@ func (*app) UserPush(w http.ResponseWriter, r *http.Request) {
 			// 推送分发过程中失败不立即返回，继续下一个推送
 		}
 	}
-
-	res["msgID"] = "msgid"
-	res["clientMsgId"] = time.Now().UnixNano()
 
 	return
 }
