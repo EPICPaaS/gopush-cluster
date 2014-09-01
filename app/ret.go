@@ -11,6 +11,7 @@ import (
 const (
 	OK             = 0
 	NotFoundServer = 1001
+	TooLong        = 65532
 	AuthErr        = 65533
 	ParamErr       = 65534
 	InternalErr    = 65535

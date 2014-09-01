@@ -60,6 +60,11 @@ func (*app) UserPush(w http.ResponseWriter, r *http.Request) {
 	msg["content"] = content
 
 	toUserNames := args["toUserNames"].([]interface{})
+	if len(toUserNames) > 1000 {
+		baseRes.Ret = TooLong
+
+		return
+	}
 
 	// TODO: 根据 appId 获取应用信息
 	glog.Infof("AppId [%s]", appId)
