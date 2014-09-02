@@ -82,9 +82,7 @@ func (*device) CreateQun(w http.ResponseWriter, r *http.Request) {
 
 	// Token 校验
 	token := baseReq["token"].(string)
-
 	user := getUserByToken(token)
-
 	if nil == user {
 		baseRes.Ret = AuthErr
 
@@ -93,8 +91,7 @@ func (*device) CreateQun(w http.ResponseWriter, r *http.Request) {
 
 	now := time.Now()
 
-	baseRequest := args["baseRequest"].(map[string]interface{})
-	creatorId := baseRequest["uid"].(string)
+	creatorId := baseReq["uid"].(string)
 	topic := args["topic"].(string)
 
 	qid := uuid.New()
