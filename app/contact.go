@@ -89,7 +89,7 @@ func (*device) AddOrRemoveContact(w http.ResponseWriter, r *http.Request) {
 			return
 		}
 
-		glog.Infof("Created a contact [from=%s, to=%s]", fromUserId, toUserId)
+		glog.V(3).Infof("Created a contact [from=%s, to=%s]", fromUserId, toUserId)
 	} else { // 删除联系人
 		if !deleteContact(fromUserId, toUserId) {
 			baseRes.Ret = InternalErr
@@ -97,7 +97,7 @@ func (*device) AddOrRemoveContact(w http.ResponseWriter, r *http.Request) {
 			return
 		}
 
-		glog.Infof("Deleted a contact [from=%s, to=%s]", fromUserId, toUserId)
+		glog.V(3).Infof("Deleted a contact [from=%s, to=%s]", fromUserId, toUserId)
 	}
 }
 

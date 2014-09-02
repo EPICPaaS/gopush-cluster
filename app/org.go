@@ -208,8 +208,6 @@ func (*device) Login(w http.ResponseWriter, r *http.Request) {
 		baseRes.ErrMsg = "auth failed"
 		baseRes.Ret = ParamErr
 
-		glog.Info(res)
-
 		return
 	}
 
