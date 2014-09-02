@@ -76,6 +76,10 @@ func (*device) AddOrRemoveContact(w http.ResponseWriter, r *http.Request) {
 	now := time.Now()
 
 	if 1 == starFriend { // 添加联系人
+		if isStar(fromUserId, toUserId) {
+			return
+		}
+
 		userUser := UserUser{Id: uuid.New(), FromUserId: fromUserId, ToUserId: toUserId, RemarkName: "", Sort: 0,
 			Created: now, Updated: now}
 
