@@ -147,11 +147,16 @@ func (*device) GetMemberByUserName(w http.ResponseWriter, r *http.Request) {
 	userName := args["userName"].(string)
 	uid := userName[:strings.LastIndex(userName, USER_SUFFIX)]
 
-	user = getUserByUid(uid)
-	if nil == user {
+	toUser := getUserByUid(uid)
+	if nil == toUser {
 		baseRes.Ret = NotFound
 
 		return
+	}
+
+	// 是否是常用联系人
+	if isStar(user.Uid, toUser.Uid) {
+		user.StarFriend = 1
 	}
 
 	res["member"] = user
@@ -622,6 +627,32 @@ func isUserExists(id string) bool {
 	}
 
 	row, err := smt.Query(id)
+	if row != nil {
+		defer row.Close()
+	} else {
+		return false
+	}
+
+	for row.Next() {
+		return true
+	}
+
+	return false
+}
+
+func isStar(fromUid, toUId string) bool {
+	smt, err := MySQL.Prepare("select 1 from user_user where from_user_id=? and to_user_id=?")
+	if smt != nil {
+		defer smt.Close()
+	} else {
+		return false
+	}
+
+	if err != nil {
+		return false
+	}
+
+	row, err := smt.Query(fromUid, toUId)
 	if row != nil {
 		defer row.Close()
 	} else {
