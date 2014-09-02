@@ -1,6 +1,7 @@
 package app
 
 import (
+	"github.com/golang/glog"
 	"time"
 )
 
@@ -23,7 +24,7 @@ type application struct {
 }
 
 // 数据库中根据 id 查询应用记录.
-func getApplication(appId string) (*application, err) {
+func getApplication(appId string) (*application, error) {
 	row := MySQL.QueryRow(SelectApplicationById, appId)
 
 	application := application{}
@@ -34,5 +35,5 @@ func getApplication(appId string) (*application, err) {
 		return nil, err
 	}
 
-	return &application, err
+	return &application, nil
 }

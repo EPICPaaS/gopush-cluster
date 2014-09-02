@@ -145,7 +145,7 @@ func (*device) GetMemberByUserName(w http.ResponseWriter, r *http.Request) {
 	}
 
 	uid := baseReq["uid"].(string)
-	user := getUserByUid(uid)
+	user = getUserByUid(uid)
 	if nil == user {
 		baseRes.Ret = NotFound
 
