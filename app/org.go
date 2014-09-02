@@ -649,21 +649,25 @@ func isStar(fromUid, toUId string) bool {
 	}
 
 	if err != nil {
+		glog.Error(err)
+
 		return false
 	}
 
 	row, err := smt.Query(fromUid, toUId)
+	if nil != err {
+		glog.Error(err)
+
+		return false
+	}
+
 	if row != nil {
 		defer row.Close()
 	} else {
 		return false
 	}
 
-	for row.Next() {
-		return true
-	}
-
-	return false
+	return row.Next()
 }
 
 func isExists(id string) (bool, string) {
