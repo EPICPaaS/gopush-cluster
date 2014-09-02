@@ -144,7 +144,9 @@ func (*device) GetMemberByUserName(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	uid := baseReq["uid"].(string)
+	userName := args["userName"].(string)
+	uid := userName[:strings.LastIndex(userName, USER_SUFFIX)]
+
 	user = getUserByUid(uid)
 	if nil == user {
 		baseRes.Ret = NotFound
@@ -152,6 +154,7 @@ func (*device) GetMemberByUserName(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	res["member"] = user
 }
 
 // 客户端设备登录.
