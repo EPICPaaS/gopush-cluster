@@ -1,9 +1,11 @@
 package app
 
 import (
+	"encoding/json"
 	"fmt"
 	"github.com/EPICPaaS/go-uuid/uuid"
 	"github.com/golang/glog"
+	"io/ioutil"
 	"net/http"
 	"time"
 )
@@ -152,7 +154,7 @@ func createContact(userUser *UserUser) bool {
 }
 
 // 在数据库中删除联系人记录.
-func deleteContact(fromtUserId, toUserId string) bool {
+func deleteContact(fromUserId, toUserId string) bool {
 	tx, err := MySQL.Begin()
 
 	if err != nil {
