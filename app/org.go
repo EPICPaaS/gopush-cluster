@@ -105,6 +105,55 @@ func UserErWeiMa(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
+// 根据 UserName 获取用户信息.
+func (*device) GetMemberByUserName(w http.ResponseWriter, r *http.Request) {
+	if r.Method != "POST" {
+		http.Error(w, "Method Not Allowed", 405)
+		return
+	}
+
+	baseRes := baseResponse{OK, ""}
+	body := ""
+	res := map[string]interface{}{"baseResponse": &baseRes}
+	defer RetPWriteJSON(w, r, res, &body, time.Now())
+
+	bodyBytes, err := ioutil.ReadAll(r.Body)
+	if err != nil {
+		baseRes.Ret = ParamErr
+		glog.Errorf("ioutil.ReadAll() failed (%s)", err.Error())
+		return
+	}
+	body = string(bodyBytes)
+
+	var args map[string]interface{}
+
+	if err := json.Unmarshal(bodyBytes, &args); err != nil {
+		baseRes.ErrMsg = err.Error()
+		baseRes.Ret = ParamErr
+		return
+	}
+
+	baseReq := args["baseRequest"].(map[string]interface{})
+
+	// Token 校验
+	token := baseReq["token"].(string)
+	user := getUserByToken(token)
+	if nil == user {
+		baseRes.Ret = AuthErr
+
+		return
+	}
+
+	uid := baseReq["uid"].(string)
+	user = getUserByUid(uid)
+	if nil == user {
+		baseRes.Ret = NotFound
+
+		return
+	}
+
+}
+
 // 客户端设备登录.
 func (*device) Login(w http.ResponseWriter, r *http.Request) {
 	if r.Method != "POST" {
