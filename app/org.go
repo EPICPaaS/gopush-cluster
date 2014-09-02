@@ -156,10 +156,10 @@ func (*device) GetMemberByUserName(w http.ResponseWriter, r *http.Request) {
 
 	// 是否是常用联系人
 	if isStar(user.Uid, toUser.Uid) {
-		user.StarFriend = 1
+		toUser.StarFriend = 1
 	}
 
-	res["member"] = user
+	res["member"] = toUser
 }
 
 // 客户端设备登录.
