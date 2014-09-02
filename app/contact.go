@@ -71,11 +71,11 @@ func (*device) AddOrRemoveContact(w http.ResponseWriter, r *http.Request) {
 
 	fromUserId := baseReq["uid"].(string)
 	toUserId := args["uid"].(string)
-	starFriend := args["starFriend"].(bool)
+	starFriend := int(args["starFriend"].(float64))
 
 	now := time.Now()
 
-	if starFriend { // 添加联系人
+	if 1 == starFriend { // 添加联系人
 		userUser := UserUser{Id: uuid.New(), FromUserId: fromUserId, ToUserId: toUserId, RemarkName: "", Sort: 0,
 			Created: now, Updated: now}
 
