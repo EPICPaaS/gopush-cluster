@@ -774,7 +774,9 @@ func (*device) GetOrgInfo(w http.ResponseWriter, r *http.Request) {
 		break
 	}
 
-	res["starMemberCount"] = 0
+	starMemberList := getStarUser(currentUser.Uid)
+	res["starMemberCount"] = len(starMemberList)
+	res["starMemberList"] = starMemberList
 	/*
 		starMembers := make(members, 2)
 
@@ -782,4 +784,40 @@ func (*device) GetOrgInfo(w http.ResponseWriter, r *http.Request) {
 		starMembers[1] = &member{Uid: "22233", UserName: "22233@user", NickName: "haha"}
 		res["starMemberList"] = starMembers*/
 	return
+}
+
+func getStarUser(userId string) members {
+	ret := members{}
+	sql := "select id, name, nickname, status, avatar, tenant_id, name_py, name_quanpin, mobile, area from user where id in (select to_user_id from user_user where from_user_id=?)"
+
+	smt, err := MySQL.Prepare(sql)
+	if smt != nil {
+		defer smt.Close()
+	} else {
+		return nil
+	}
+
+	if err != nil {
+		return nil
+	}
+
+	row, err := smt.Query(userId)
+	if row != nil {
+		defer row.Close()
+	} else {
+		return nil
+	}
+
+	for row.Next() {
+		rec := member{}
+		err = row.Scan(&rec.Uid, &rec.Name, &rec.NickName, &rec.Status, &rec.Avatar, &rec.TenantId, &rec.PYInitial, &rec.PYQuanPin, &rec.Mobile, &rec.Area)
+		if err != nil {
+			glog.Error(err)
+		}
+
+		rec.UserName = rec.Uid + USER_SUFFIX
+		ret = append(ret, &rec)
+	}
+
+	return ret
 }
