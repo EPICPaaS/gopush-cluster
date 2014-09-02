@@ -69,7 +69,7 @@ func (r *RandLB) Get() *rpc.Client {
 		return nil
 	}
 	addr := r.addrs[rand.Intn(r.length)]
-	glog.V(1).Infof("rand hit rpc node: \"%s\"", addr)
+	glog.V(5).Infof("rand hit rpc node: \"%s\"", addr)
 	client, _ := r.Clients[addr]
 	return client
 }
@@ -122,7 +122,7 @@ func (r *RandLB) ping(service string, retry, ping time.Duration) {
 					continue
 				}
 				// if ok, sleep
-				glog.V(5).Infof("\"%s\": rpc ping ok", addr)
+				glog.V(6).Infof("\"%s\": rpc ping ok", addr)
 				time.Sleep(ping)
 			}
 		}(addr)
