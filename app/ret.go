@@ -42,10 +42,10 @@ func RetWrite(w http.ResponseWriter, r *http.Request, res map[string]interface{}
 	if n, err := w.Write([]byte(dataStr)); err != nil {
 		glog.Errorf("w.Write(\"%s\") error(%v)", dataStr, err)
 	} else {
-		glog.V(2).Infof("w.Write(\"%s\") write %d bytes", dataStr, n)
+		glog.V(4).Infof("w.Write(\"%s\") write %d bytes", dataStr, n)
 	}
 
-	glog.V(2).Infof("req: \"%s\", res:\"%s\", ip:\"%s\", time:\"%fs\"", r.URL.String(), dataStr, r.RemoteAddr, time.Now().Sub(start).Seconds())
+	glog.V(4).Infof("req: \"%s\", res:\"%s\", ip:\"%s\", time:\"%fs\"", r.URL.String(), dataStr, r.RemoteAddr, time.Now().Sub(start).Seconds())
 }
 
 // retPWrite marshal the result and write to client(post).
@@ -59,10 +59,10 @@ func RetPWrite(w http.ResponseWriter, r *http.Request, res map[string]interface{
 	if n, err := w.Write([]byte(dataStr)); err != nil {
 		glog.Errorf("w.Write(\"%s\") error(%v)", dataStr, err)
 	} else {
-		glog.V(2).Infof("w.Write(\"%s\") write %d bytes", dataStr, n)
+		glog.V(4).Infof("w.Write(\"%s\") write %d bytes", dataStr, n)
 	}
 
-	glog.V(2).Infof("req: \"%s\", post: \"%s\", res:\"%s\", ip:\"%s\", time:\"%fs\"", r.URL.String(), *body, dataStr, r.RemoteAddr, time.Now().Sub(start).Seconds())
+	glog.V(4).Infof("req: \"%s\", post: \"%s\", res:\"%s\", ip:\"%s\", time:\"%fs\"", r.URL.String(), *body, dataStr, r.RemoteAddr, time.Now().Sub(start).Seconds())
 }
 
 // 带 Content-Type=application/json 头 写 JSON 数据，为了保持原有 gopush-cluster 的兼容性，所以新加了这个函数.

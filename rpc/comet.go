@@ -172,7 +172,7 @@ func handleCometNodeEvent(conn *zk.Conn, fpath string, retry, ping time.Duration
 			nodes = append(nodes, k)
 		}
 		cometHash = hash.NewKetama2(nodes, 255)
-		glog.V(1).Infof("cometNodeInfoMap len: %d", len(cometNodeInfoMap))
+		glog.V(5).Infof("cometNodeInfoMap len: %d", len(cometNodeInfoMap))
 	}
 }
 
@@ -291,7 +291,7 @@ func GetComet(key string) *CometNodeInfo {
 		return nil
 	}
 	node := cometHash.Node(key)
-	glog.V(1).Infof("cometHash hits \"%s\"", node)
+	glog.V(5).Infof("cometHash hits \"%s\"", node)
 	return cometNodeInfoMap[node]
 }
 

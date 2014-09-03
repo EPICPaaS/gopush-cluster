@@ -54,6 +54,7 @@ func StartHTTP() {
 	appAppServeMux.HandleFunc("/app/client/device/login", app.Device.Login)
 	appAppServeMux.HandleFunc("/app/client/device/push", app.Device.Push)
 	appAppServeMux.HandleFunc("/app/client/device/addOrRemoveContact", app.Device.AddOrRemoveContact)
+	appAppServeMux.HandleFunc("/app/client/device/getMember", app.Device.GetMemberByUserName)
 	appAppServeMux.HandleFunc("/app/client/app/user/push", app.App.UserPush)
 	appAppServeMux.HandleFunc("/app/client/device/getOrgInfo", app.Device.GetOrgInfo)
 	appAppServeMux.HandleFunc("/app/client/device/getOrgUserList", app.Device.GetOrgUserList)

@@ -144,14 +144,22 @@ func (*device) GetMemberByUserName(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	uid := baseReq["uid"].(string)
-	user = getUserByUid(uid)
-	if nil == user {
+	userName := args["userName"].(string)
+	uid := userName[:strings.LastIndex(userName, USER_SUFFIX)]
+
+	toUser := getUserByUid(uid)
+	if nil == toUser {
 		baseRes.Ret = NotFound
 
 		return
 	}
 
+	// 是否是常用联系人
+	if isStar(user.Uid, toUser.Uid) {
+		toUser.StarFriend = 1
+	}
+
+	res["member"] = toUser
 }
 
 // 客户端设备登录.
@@ -199,8 +207,6 @@ func (*device) Login(w http.ResponseWriter, r *http.Request) {
 	if nil == member {
 		baseRes.ErrMsg = "auth failed"
 		baseRes.Ret = ParamErr
-
-		glog.Info(res)
 
 		return
 	}
@@ -630,6 +636,36 @@ func isUserExists(id string) bool {
 	}
 
 	return false
+}
+
+func isStar(fromUid, toUId string) bool {
+	smt, err := MySQL.Prepare("select 1 from user_user where from_user_id=? and to_user_id=?")
+	if smt != nil {
+		defer smt.Close()
+	} else {
+		return false
+	}
+
+	if err != nil {
+		glog.Error(err)
+
+		return false
+	}
+
+	row, err := smt.Query(fromUid, toUId)
+	if nil != err {
+		glog.Error(err)
+
+		return false
+	}
+
+	if row != nil {
+		defer row.Close()
+	} else {
+		return false
+	}
+
+	return row.Next()
 }
 
 func isExists(id string) (bool, string) {

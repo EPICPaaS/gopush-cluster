@@ -68,7 +68,7 @@ func (*app) UserPush(w http.ResponseWriter, r *http.Request) {
 	}
 
 	// TODO: 根据 appId 获取应用信息
-	glog.Infof("AppId [%s]", appId)
+	glog.V(3).Infof("AppId [%s]", appId)
 
 	msg["fromUserName"] = appId + APP_SUFFIX
 	fromDisplayName := "Test APP"
@@ -258,7 +258,6 @@ func getToUserNames(toUserName string) (userNames []string, pushType string) {
 	if strings.HasSuffix(toUserName, QUN_SUFFIX) { // 群推
 		qunId := toUserName[:len(toUserName)-len(QUN_SUFFIX)]
 
-		glog.Info(qunId)
 		userNames, err := getUserNamesInQun(qunId)
 
 		if nil != err {
