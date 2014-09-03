@@ -921,7 +921,7 @@ func (*device) SearchUser(w http.ResponseWriter, r *http.Request) {
 	var cnt int
 	switch searchType {
 	case "user":
-		memberList, cnt = searchUser(searchKey.(string), int(offset.(float64)), int(limit.(float64)))
+		memberList, cnt = searchUser(currentUser.TenantId, searchKey.(string), int(offset.(float64)), int(limit.(float64)))
 	case "app":
 		break
 	}
@@ -968,9 +968,9 @@ func getStarUser(userId string) members {
 	return ret
 }
 
-func searchUser(nickName string, offset, limit int) (members, int) {
+func searchUser(tenantId, nickName string, offset, limit int) (members, int) {
 	ret := members{}
-	sql := "select id, name, nickname, status, avatar, tenant_id, name_py, name_quanpin, mobile, area from user where nickname like ? limit ?, ?"
+	sql := "select id, name, nickname, status, avatar, tenant_id, name_py, name_quanpin, mobile, area from user where tenant_id=? and nickname like ? limit ?, ?"
 
 	smt, err := MySQL.Prepare(sql)
 	if smt != nil {
@@ -983,7 +983,7 @@ func searchUser(nickName string, offset, limit int) (members, int) {
 		return nil, 0
 	}
 
-	row, err := smt.Query("%"+nickName+"%", offset, limit)
+	row, err := smt.Query(tenantId, "%"+nickName+"%", offset, limit)
 	if row != nil {
 		defer row.Close()
 	} else {
