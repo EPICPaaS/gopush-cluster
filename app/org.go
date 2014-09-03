@@ -835,6 +835,67 @@ func (*device) GetOrgInfo(w http.ResponseWriter, r *http.Request) {
 	return
 }
 
+func (*device) SearchUser(w http.ResponseWriter, r *http.Request) {
+	if r.Method != "POST" {
+		http.Error(w, "Method Not Allowed", 405)
+		return
+	}
+	baseRes := map[string]interface{}{"ret": OK, "errMsg": ""}
+	body := ""
+	res := map[string]interface{}{"baseResponse": baseRes}
+	defer RetPWriteJSON(w, r, res, &body, time.Now())
+
+	bodyBytes, err := ioutil.ReadAll(r.Body)
+	if err != nil {
+		res["ret"] = ParamErr
+		glog.Errorf("ioutil.ReadAll() failed (%s)", err.Error())
+		return
+	}
+	body = string(bodyBytes)
+
+	var args map[string]interface{}
+
+	if err := json.Unmarshal(bodyBytes, &args); err != nil {
+		baseRes["errMsg"] = err.Error()
+		baseRes["ret"] = ParamErr
+		return
+	}
+
+	baseReq := args["baseRequest"].(map[string]interface{})
+
+	//uid := baseReq["uid"].(string)
+	//deviceId := baseReq["deviceID"]
+	//userName := args["userName"]
+	//password := args["password"]
+
+	// Token 校验
+	token := baseReq["token"].(string)
+	currentUser := getUserByToken(token)
+	if nil == currentUser {
+		baseRes["ret"] = AuthErr
+		return
+	}
+
+	searchKey := args["searchKey"]
+	searchType := args["searchType"]
+	offset := args["offset"]
+	limit := args["limit"]
+
+	var memberList members
+	var cnt int
+	switch searchType {
+	case "user":
+		memberList, cnt = searchUser(searchKey.(string), int(offset.(float64)), int(limit.(float64)))
+	case "app":
+		break
+	}
+
+	res["memberListSize"] = len(memberList)
+	res["memberList"] = memberList
+	res["count"] = cnt
+	return
+}
+
 func getStarUser(userId string) members {
 	ret := members{}
 	sql := "select id, name, nickname, status, avatar, tenant_id, name_py, name_quanpin, mobile, area from user where id in (select to_user_id from user_user where from_user_id=?)"
@@ -869,4 +930,66 @@ func getStarUser(userId string) members {
 	}
 
 	return ret
+}
+
+func searchUser(nickName string, offset, limit int) (members, int) {
+	ret := members{}
+	sql := "select id, name, nickname, status, avatar, tenant_id, name_py, name_quanpin, mobile, area from user where nickname like ? limit ?, ?"
+
+	smt, err := MySQL.Prepare(sql)
+	if smt != nil {
+		defer smt.Close()
+	} else {
+		return nil, 0
+	}
+
+	if err != nil {
+		return nil, 0
+	}
+
+	row, err := smt.Query("%"+nickName+"%", offset, limit)
+	if row != nil {
+		defer row.Close()
+	} else {
+		return nil, 0
+	}
+
+	for row.Next() {
+		rec := member{}
+		err = row.Scan(&rec.Uid, &rec.Name, &rec.NickName, &rec.Status, &rec.Avatar, &rec.TenantId, &rec.PYInitial, &rec.PYQuanPin, &rec.Mobile, &rec.Area)
+		if err != nil {
+			glog.Error(err)
+		}
+
+		rec.UserName = rec.Uid + USER_SUFFIX
+		ret = append(ret, &rec)
+	}
+
+	sql = "select count(*) from user where nickname like ?"
+	smt, err = MySQL.Prepare(sql)
+	if smt != nil {
+		defer smt.Close()
+	} else {
+		return nil, 0
+	}
+
+	if err != nil {
+		return nil, 0
+	}
+
+	row, err = smt.Query("%" + nickName + "%")
+	if row != nil {
+		defer row.Close()
+	} else {
+		return nil, 0
+	}
+
+	cnt := 0
+	for row.Next() {
+		err = row.Scan(&cnt)
+		if err != nil {
+			glog.Error(err)
+		}
+	}
+	return ret, cnt
 }
