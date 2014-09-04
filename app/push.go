@@ -51,9 +51,14 @@ func (*app) UserPush(w http.ResponseWriter, r *http.Request) {
 
 	baseReq := args["baseRequest"].(map[string]interface{})
 
-	// TODO: Token 校验
 	appId := baseReq["appId"].(string)
-	// token := baseReq["token"].(string)
+	token := baseReq["token"].(string)
+	application, err := getApplicationByToken(token)
+	if nil != err {
+		baseRes.Ret = AuthErr
+
+		return
+	}
 
 	msg := map[string]interface{}{}
 
@@ -67,7 +72,7 @@ func (*app) UserPush(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	// TODO: 根据 appId 获取应用信息
+	// 根据 appId 获取应用信息
 	glog.V(3).Infof("AppId [%s]", appId)
 
 	msg["fromUserName"] = appId + APP_SUFFIX

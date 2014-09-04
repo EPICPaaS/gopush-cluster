@@ -7,7 +7,9 @@ import (
 
 const (
 	// 根据 id 查询应用记录.
-	SelectApplicationById = "SELECT * FROM `app` WHERE id = ?"
+	SelectApplicationById = "SELECT * FROM `app` WHERE `id` = ?"
+	// 根据 token 获取应用记录.
+	SelectApplicationByToken = "SELECT * FROM `app` WHERE `token` = ?"
 )
 
 // 应用结构.
@@ -23,9 +25,25 @@ type application struct {
 	Updated time.Time `json:"updated"`
 }
 
-// 数据库中根据 id 查询应用记录.
+// 根据 id 查询应用记录.
 func getApplication(appId string) (*application, error) {
 	row := MySQL.QueryRow(SelectApplicationById, appId)
+
+	application := application{}
+
+	if err := row.Scan(&application.Id, &application.Name, &application.Token, &application.Type, &application.Status,
+		&application.Sort, &application.Level, &application.Created, &application.Updated); err != nil {
+		glog.Error(err)
+
+		return nil, err
+	}
+
+	return &application, nil
+}
+
+// 根据 token 查询应用记录.
+func getApplicationByToken(token string) (*application, error) {
+	row := MySQL.QueryRow(SelectApplicationByToken, token)
 
 	application := application{}
 
