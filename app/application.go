@@ -28,6 +28,7 @@ func getApplication(appId string) (*application, error) {
 	row := MySQL.QueryRow(SelectApplicationById, appId)
 
 	application := application{}
+
 	if err := row.Scan(&application.Id, &application.Name, &application.Token, &application.Type, &application.Status,
 		&application.Sort, &application.Level, &application.Created, &application.Updated); err != nil {
 		glog.Error(err)

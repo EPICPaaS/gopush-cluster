@@ -71,9 +71,15 @@ func (*app) UserPush(w http.ResponseWriter, r *http.Request) {
 	glog.V(3).Infof("AppId [%s]", appId)
 
 	msg["fromUserName"] = appId + APP_SUFFIX
-	fromDisplayName := "Test APP"
+	application, err := getApplication(appId)
+	if err != nil {
+		baseRes.Ret = ParamErr
+		glog.Error(err)
 
-	msg["fromDisplayName"] = fromDisplayName
+		return
+	}
+
+	msg["fromDisplayName"] = application.Name
 
 	// 消息过期时间（单位：秒）
 	exp := args["expire"]
