@@ -90,6 +90,7 @@ func (*device) CheckUpdate(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	// 组装返回结果
 	objectContent := ClientVerUpdateObjectContent{
 		VersionCode: clientVersion.VersionCode, VersionName: clientVersion.VersionName, URL: clientVersion.DownloadURL,
 		FileName: clientVersion.FileName}
