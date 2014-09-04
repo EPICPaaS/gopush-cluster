@@ -11,17 +11,6 @@ import (
 )
 
 // 应用端推送消息给用户.
-/*
-   {
-     "baseRequest" : {
-  	   "appId" : "23622391649370202",
-       "token": ""
-  	  },
-      "content": "Test!",
-	  "expire": 600, // optional
-	  "toUserNames" : ["1@user", "2@user"]
-   }
-*/
 func (*app) UserPush(w http.ResponseWriter, r *http.Request) {
 	if r.Method != "POST" {
 		http.Error(w, "Method Not Allowed", 405)
@@ -51,11 +40,7 @@ func (*app) UserPush(w http.ResponseWriter, r *http.Request) {
 
 	baseReq := args["baseRequest"].(map[string]interface{})
 
-	// TODO: Token 校验
-	//appId := baseReq["appId"].(string)
-	//sendAppId = args["sendAppId"].(string)
-	// token := baseReq["token"].(string)
-	//appId := baseReq["appId"].(string)
+	// Token 校验
 	token := baseReq["token"].(string)
 	application, err := getApplicationByToken(token)
 	if nil != err {
@@ -79,12 +64,8 @@ func (*app) UserPush(w http.ResponseWriter, r *http.Request) {
 	}
 
 	appId := args["objectContent"].(map[string]interface{})["appId"].(string)
-	// TODO: 根据 appId 获取应用信息
-	// 根据 appId 获取应用信息
-	glog.V(3).Infof("AppId [%s]", appId)
 
 	msg["fromUserName"] = appId + APP_SUFFIX
-
 	msg["fromDisplayName"] = application.Name
 
 	// 消息过期时间（单位：秒）
@@ -191,10 +172,11 @@ func (*device) Push(w http.ResponseWriter, r *http.Request) {
 		msg["content"] = fromUserName + "|" + m.Name + "|" + m.NickName + "&&" + msg["content"].(string)
 		msg["fromDisplayName"] = qun.Name
 		msg["fromUserName"] = toUserName
-	} // TODO: 组织机构（部门/单位）推送消息体处理
+	} else { // TODO: 组织机构（部门/单位）推送消息体处理
 
-	// 消息过期时间（单位：秒）
-	exp := msg["expire"]
+		// 消息过期时间（单位：秒）
+		exp := msg["expire"]
+	}
 	expire := 600
 	if nil != exp {
 		expire = int(exp.(float64))
