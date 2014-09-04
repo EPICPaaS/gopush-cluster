@@ -174,9 +174,10 @@ func (*device) Push(w http.ResponseWriter, r *http.Request) {
 		msg["fromUserName"] = toUserName
 	} else { // TODO: 组织机构（部门/单位）推送消息体处理
 
-		// 消息过期时间（单位：秒）
-		exp := msg["expire"]
 	}
+
+	// 消息过期时间（单位：秒）
+	exp := msg["expire"]
 	expire := 600
 	if nil != exp {
 		expire = int(exp.(float64))
