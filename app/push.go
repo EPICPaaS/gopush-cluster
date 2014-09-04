@@ -49,12 +49,20 @@ func (*app) UserPush(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	//baseReq := args["baseRequest"].(map[string]interface{})
+	baseReq := args["baseRequest"].(map[string]interface{})
 
 	// TODO: Token 校验
 	//appId := baseReq["appId"].(string)
 	//sendAppId = args["sendAppId"].(string)
 	// token := baseReq["token"].(string)
+	//appId := baseReq["appId"].(string)
+	token := baseReq["token"].(string)
+	application, err := getApplicationByToken(token)
+	if nil != err {
+		baseRes.Ret = AuthErr
+
+		return
+	}
 
 	msg := map[string]interface{}{}
 
@@ -72,16 +80,10 @@ func (*app) UserPush(w http.ResponseWriter, r *http.Request) {
 
 	appId := args["objectContent"].(map[string]interface{})["appId"].(string)
 	// TODO: 根据 appId 获取应用信息
+	// 根据 appId 获取应用信息
 	glog.V(3).Infof("AppId [%s]", appId)
 
 	msg["fromUserName"] = appId + APP_SUFFIX
-	application, err := getApplication(appId)
-	if err != nil {
-		baseRes.Ret = ParamErr
-		glog.Error(err)
-
-		return
-	}
 
 	msg["fromDisplayName"] = application.Name
 

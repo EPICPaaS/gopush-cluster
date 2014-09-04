@@ -9,7 +9,6 @@ import (
 )
 
 const (
-
 	// 获取最新的客户端版本
 	SelectLatestClientVerByType = "SELECT * FROM `client_version` WHERE `type` = ? ORDER BY `ver_code` DESC LIMIT 1"
 )
@@ -83,7 +82,7 @@ func (*device) CheckUpdate(w http.ResponseWriter, r *http.Request) {
 
 	deviceType := args["type"].(string)
 
-	clientVersion, err := getLatestVerion(deviceType)
+	clientVersion, err := GetLatestVerion(deviceType)
 	if nil != err {
 		baseRes.Ret = InternalErr
 
@@ -100,7 +99,7 @@ func (*device) CheckUpdate(w http.ResponseWriter, r *http.Request) {
 }
 
 // 在数据库中查询指定类型客户端的最新的版本.
-func getLatestVerion(deviceType string) (*ClientVersion, error) {
+func GetLatestVerion(deviceType string) (*ClientVersion, error) {
 	row := MySQL.QueryRow(SelectLatestClientVerByType, deviceType)
 
 	clientVer := ClientVersion{}
