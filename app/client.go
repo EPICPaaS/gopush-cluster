@@ -9,6 +9,7 @@ import (
 )
 
 const (
+
 	// 获取最新的客户端版本
 	SelectLatestClientVerByType = "SELECT * FROM `client_version` WHERE `type` = ? ORDER BY `ver_code` DESC LIMIT 1"
 )
@@ -36,9 +37,9 @@ type ClientVerUpdateObjectContent struct {
 
 // 客户端版本更新消息结构.
 type ClientVerUpdateMsg struct {
-	MsgType       int    `json:"msgType"`
-	Content       string `json:"content"`
-	ObjectContent *ClientVerUpdateObjectContent
+	MsgType       int                           `json:"msgType"`
+	Content       string                        `json:"content"`
+	ObjectContent *ClientVerUpdateObjectContent `json:"objectContent"`
 }
 
 // 移动端检查更新.
@@ -82,7 +83,7 @@ func (*device) CheckUpdate(w http.ResponseWriter, r *http.Request) {
 
 	deviceType := args["type"].(string)
 
-	clientVersion, err := GetLatestVerion(deviceType)
+	clientVersion, err := getLatestVerion(deviceType)
 	if nil != err {
 		baseRes.Ret = InternalErr
 
@@ -99,7 +100,7 @@ func (*device) CheckUpdate(w http.ResponseWriter, r *http.Request) {
 }
 
 // 在数据库中查询指定类型客户端的最新的版本.
-func GetLatestVerion(deviceType string) (*ClientVersion, error) {
+func getLatestVerion(deviceType string) (*ClientVersion, error) {
 	row := MySQL.QueryRow(SelectLatestClientVerByType, deviceType)
 
 	clientVer := ClientVersion{}
