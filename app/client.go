@@ -3,7 +3,9 @@ package app
 import (
 	"encoding/json"
 	"github.com/golang/glog"
+	"io/ioutil"
 	"net/http"
+	"time"
 )
 
 const (
@@ -79,14 +81,19 @@ func (*device) CheckUpdate(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	deviceType := args["type"]
+	deviceType := args["type"].(string)
 
-	clientVersion := getLatestVerion(deviceType)
+	clientVersion, err := getLatestVerion(deviceType)
+	if nil != err {
+		baseRes.Ret = InternalErr
+
+		return
+	}
 
 	objectContent := ClientVerUpdateObjectContent{
 		VersionCode: clientVersion.VersionCode, VersionName: clientVersion.VersionName, URL: clientVersion.DownloadURL,
 		FileName: clientVersion.FileName}
-	msg := ClientVerUpdateMsg{MsgType: 1001, Content: ClientVersion.VersionDescription, ObjectContent: &objectContent}
+	msg := ClientVerUpdateMsg{MsgType: 1001, Content: clientVersion.VersionDescription, ObjectContent: &objectContent}
 
 	res["msg"] = msg
 }
