@@ -49,16 +49,19 @@ func (*app) UserPush(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	baseReq := args["baseRequest"].(map[string]interface{})
+	//baseReq := args["baseRequest"].(map[string]interface{})
 
 	// TODO: Token 校验
-	appId := baseReq["appId"].(string)
+	//appId := baseReq["appId"].(string)
+	//sendAppId = args["sendAppId"].(string)
 	// token := baseReq["token"].(string)
 
 	msg := map[string]interface{}{}
 
 	content := args["content"].(string)
 	msg["content"] = content
+	msg["messageType"] = args["messageType"]
+	msg["objectContent"] = args["objectContent"]
 
 	toUserNames := args["toUserNames"].([]interface{})
 	if len(toUserNames) > 1000 { // 一次最多只能推送 1000 人
@@ -67,6 +70,7 @@ func (*app) UserPush(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	appId := args["objectContent"].(map[string]interface{})["appId"].(string)
 	// TODO: 根据 appId 获取应用信息
 	glog.V(3).Infof("AppId [%s]", appId)
 
