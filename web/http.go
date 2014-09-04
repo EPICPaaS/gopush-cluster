@@ -55,13 +55,15 @@ func StartHTTP() {
 	appAppServeMux.HandleFunc("/app/client/device/push", app.Device.Push)
 	appAppServeMux.HandleFunc("/app/client/device/addOrRemoveContact", app.Device.AddOrRemoveContact)
 	appAppServeMux.HandleFunc("/app/client/device/getMember", app.Device.GetMemberByUserName)
-	appAppServeMux.HandleFunc("/app/client/app/user/push", app.App.UserPush)
+	appAppServeMux.HandleFunc("/app/client/device/checkUpdate", app.Device.CheckUpdate)
 	appAppServeMux.HandleFunc("/app/client/device/getOrgInfo", app.Device.GetOrgInfo)
 	appAppServeMux.HandleFunc("/app/client/device/getOrgUserList", app.Device.GetOrgUserList)
 	appAppServeMux.HandleFunc("/app/client/device/syncOrg", app.Device.SyncOrg)
 	appAppServeMux.HandleFunc("/app/client/device/search", app.Device.SearchUser)
 	appAppServeMux.HandleFunc("/app/client/device/create-qun", app.Device.CreateQun)
 	appAppServeMux.HandleFunc("/app/client/device/get-qun-members", app.Device.GetUsersInQun)
+
+	appAppServeMux.HandleFunc("/app/client/app/user/push", app.App.UserPush)
 
 	appAppServeMux.HandleFunc("/app/user/erweima", app.UserErWeiMa)
 
