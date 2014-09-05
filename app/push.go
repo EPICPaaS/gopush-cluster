@@ -53,7 +53,7 @@ func (*app) UserPush(w http.ResponseWriter, r *http.Request) {
 
 	content := args["content"].(string)
 	msg["content"] = content
-	msg["messageType"] = args["messageType"]
+	msg["msgType"] = args["msgType"]
 	msg["objectContent"] = args["objectContent"]
 
 	toUserNames := args["toUserNames"].([]interface{})
