@@ -7,9 +7,9 @@ import (
 
 const (
 	// 根据 id 查询应用记录.
-	SelectApplicationById = "SELECT * FROM `app` WHERE `id` = ?"
+	SelectApplicationById = "SELECT * FROM `application` WHERE `id` = ?"
 	// 根据 token 获取应用记录.
-	SelectApplicationByToken = "SELECT * FROM `app` WHERE `token` = ?"
+	SelectApplicationByToken = "SELECT * FROM `application` WHERE `token` = ?"
 )
 
 // 应用结构.
