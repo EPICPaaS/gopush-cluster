@@ -17,7 +17,7 @@ type application struct {
 	Id      string    `json:"id"`
 	Name    string    `json:"name"`
 	Token   string    `json:"token"`
-	Type    int       `json:"type"`
+	Type    string    `json:"type"`
 	Status  int       `json:"status"`
 	Sort    int       `json:"sort"`
 	Level   int       `json:"level"`
