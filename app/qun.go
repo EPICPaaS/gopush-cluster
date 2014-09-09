@@ -2,11 +2,13 @@ package app
 
 import (
 	"encoding/json"
-	"github.com/EPICPaaS/go-uuid/uuid"
-	"github.com/golang/glog"
 	"io/ioutil"
 	"net/http"
+	"strings"
 	"time"
+
+	"github.com/EPICPaaS/go-uuid/uuid"
+	"github.com/golang/glog"
 )
 
 const (
@@ -188,7 +190,8 @@ func (*device) GetUsersInQun(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	qid := args["qid"].(string)
+	userName := args["userName"].(string)
+	qid := userName[:strings.LastIndex(userName, QUN_SUFFIX)]
 
 	members, err := getUsersInQun(qid)
 	if err != nil {
