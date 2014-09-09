@@ -17,11 +17,12 @@
 package main
 
 import (
-	"github.com/EPICPaaS/gopush-cluster/app"
-	"github.com/golang/glog"
 	"net"
 	"net/http"
 	"time"
+
+	"github.com/EPICPaaS/gopush-cluster/app"
+	"github.com/golang/glog"
 )
 
 const (
@@ -51,6 +52,7 @@ func StartHTTP() {
 
 	// 应用消息服务
 	appAppServeMux := http.NewServeMux()
+	appAppServeMux.Handle("/app/static/", http.StripPrefix("/app/static/", http.FileServer(http.Dir("static"))))
 	appAppServeMux.HandleFunc("/app/client/device/login", app.Device.Login)
 	appAppServeMux.HandleFunc("/app/client/device/push", app.Device.Push)
 	appAppServeMux.HandleFunc("/app/client/device/addOrRemoveContact", app.Device.AddOrRemoveContact)

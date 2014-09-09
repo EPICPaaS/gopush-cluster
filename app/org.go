@@ -3,13 +3,14 @@ package app
 import (
 	"database/sql"
 	"encoding/json"
-	"fmt"
-	"github.com/golang/glog"
 	"io/ioutil"
 	"net/http"
 	"sort"
 	"strings"
+	"text/template"
 	"time"
+
+	"github.com/golang/glog"
 )
 
 type member struct {
@@ -98,11 +99,25 @@ func UserErWeiMa(w http.ResponseWriter, r *http.Request) {
 
 	user := getUserByUid(uid)
 	if nil == user {
-		fmt.Fprintln(w, "")
-	} else {
-		// TODO: 完善显示用户信息
-		fmt.Fprintln(w, user.NickName)
+		http.Error(w, "Not Found", 404)
+
+		return
 	}
+
+	t, err := template.ParseFiles("view/erweima.html")
+
+	if nil != err {
+		glog.Error(err)
+		http.Error(w, err.Error(), 500)
+
+		return
+	}
+
+	model := map[string]interface{}{
+		"staticServer": "/app/static",
+		"nickname":     user.NickName, "username": user.NickName, "email": user.Email, "phone": user.Mobile}
+
+	t.Execute(w, model)
 }
 
 // 根据 UserName 获取用户信息.
