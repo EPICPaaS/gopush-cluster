@@ -272,6 +272,8 @@ func getUsersInQun(qunId string) ([]member, error) {
 			return nil, err
 		}
 
+		rec.UserName = rec.Uid + USER_SUFFIX
+
 		ret = append(ret, rec)
 	}
 
