@@ -24,6 +24,9 @@ const (
 	SelectQunUserIdSQL = "SELECT `user_id` FROM `qun_user` where `qun_id` = ?"
 	// 根据群 id 获取群
 	SelectQunById = "SELECT * FROM `qun` where `id` = ?"
+
+	//根据群id修改群topic
+	UpdateQunTopicByIdSQL = "UPDATE `qun` SET `name` = ? WHERE `id` = ?"
 )
 
 // 群结构.
@@ -203,6 +206,87 @@ func (*device) GetUsersInQun(w http.ResponseWriter, r *http.Request) {
 	res["memberList"] = members
 
 	return
+}
+
+//根据群id修改群topic
+func (*device) UpdateQunTopicById(w http.ResponseWriter, r *http.Request) {
+	if r.Method != "POST" {
+		http.Error(w, "Method Not Allowed", 405)
+
+		return
+	}
+
+	baseRes := baseResponse{OK, ""}
+	body := ""
+	res := map[string]interface{}{"baseResponse": &baseRes}
+	defer RetPWriteJSON(w, r, res, &body, time.Now())
+
+	bodyBytes, err := ioutil.ReadAll(r.Body)
+	if err != nil {
+		baseRes.Ret = ParamErr
+		glog.Errorf("ioutil.ReadAll() failed (%s)", err.Error())
+
+		return
+	}
+	body = string(bodyBytes)
+
+	var args map[string]interface{}
+
+	if err := json.Unmarshal(bodyBytes, &args); err != nil {
+		baseRes.ErrMsg = err.Error()
+		baseRes.Ret = ParamErr
+
+		return
+	}
+
+	baseReq := args["baseRequest"].(map[string]interface{})
+
+	// Token 校验
+	token := baseReq["token"].(string)
+	user := getUserByToken(token)
+	if nil == user {
+		baseRes.Ret = AuthErr
+
+		return
+	}
+	chatRoomName := args["ChatRoomName"].(string)
+	qunId := chatRoomName[:strings.LastIndex(chatRoomName, QUN_SUFFIX)]
+	topic := args["topic"].(string)
+	if updateQunTopicById(qunId, topic) {
+		baseRes.ErrMsg = "update Qun Topic success"
+		baseRes.Ret = OK
+	} else {
+		glog.Error("update Qun Topic  faild")
+		baseRes.ErrMsg = "update Qun Topic  faild"
+		baseRes.Ret = InternalErr
+	}
+}
+
+//根据群id更新群topic
+func updateQunTopicById(qunId string, topic string) bool {
+	tx, err := MySQL.Begin()
+
+	if err != nil {
+		glog.Error(err)
+
+		return false
+	}
+	_, err = tx.Exec(UpdateQunTopicByIdSQL, topic, qunId)
+	if err != nil {
+		glog.Error(err)
+
+		if err := tx.Rollback(); err != nil {
+			glog.Error(err)
+		}
+
+		return false
+	}
+	if err = tx.Commit(); err != nil {
+		glog.Error(err)
+
+		return false
+	}
+	return true
 }
 
 // 数据库中插入群记录、群-用户关联记录.

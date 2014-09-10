@@ -64,6 +64,7 @@ func StartHTTP() {
 	appAppServeMux.HandleFunc("/app/client/device/search", app.Device.SearchUser)
 	appAppServeMux.HandleFunc("/app/client/device/create-qun", app.Device.CreateQun)
 	appAppServeMux.HandleFunc("/app/client/device/getQunMembers", app.Device.GetUsersInQun)
+	appAppServeMux.HandleFunc("/app/client/device/updateQunTopic", app.Device.UpdateQunTopicById)
 
 	appAppServeMux.HandleFunc("/app/client/app/user/push", app.App.UserPush)
 
