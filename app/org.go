@@ -749,7 +749,7 @@ func (*device) GetOrgInfo(w http.ResponseWriter, r *http.Request) {
 	currentUser := getUserByToken(token)
 	if nil == currentUser {
 		baseRes["ret"] = AuthErr
-
+		baseRes["ErrMsg"] = "会话超时请重新登录"
 		return
 	}
 
