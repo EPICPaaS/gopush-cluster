@@ -27,7 +27,7 @@ type member struct {
 	StarFriend  int       `json:"starFriend"`
 	Avatar      string    `json:"avatar"`
 	parentId    string    `json:"parentId"`
-	sort        int       `json:"sort"`
+	Sort        int       `json:"sort"`
 	rand        int       `json:"rand"`
 	Password    string    `json:"password"`
 	TenantId    string    `json:"tenantId"`
@@ -256,7 +256,7 @@ func (s BySort) Swap(i, j int) {
 }
 
 func (s BySort) Less(i, j int) bool {
-	return s.memberList[i].sort < s.memberList[j].sort
+	return s.memberList[i].Sort < s.memberList[j].Sort
 }
 
 func sortMemberList(lst []*member) {
@@ -299,7 +299,7 @@ func getUserListByTenantId(id string) members {
 }
 
 func getUserListByOrgId(id string) members {
-	smt, err := MySQL.Prepare("select id, name, nickname, status, avatar, tenant_id, name_py, name_quanpin, mobile, area from user where id in (select user_id from org_user where org_id=?)")
+	smt, err := MySQL.Prepare("select `user`.`id`, `user`.`name`, `user`.`nickname`, `user`.`status`, `user`.`avatar`, `user`.`tenant_id`, `user`.`name_py`, `user`.`name_quanpin`, `user`.`mobile`, `user`.`area`,`org_user`.`sort`	from `user`,`org_user` where `user`.`id`=`org_user`.`user_id` and org_id=?")
 	if smt != nil {
 		defer smt.Close()
 	} else {
@@ -319,7 +319,7 @@ func getUserListByOrgId(id string) members {
 	ret := members{}
 	for row.Next() {
 		rec := new(member)
-		err = row.Scan(&rec.Uid, &rec.Name, &rec.NickName, &rec.Status, &rec.Avatar, &rec.TenantId, &rec.PYInitial, &rec.PYQuanPin, &rec.Mobile, &rec.Area)
+		err = row.Scan(&rec.Uid, &rec.Name, &rec.NickName, &rec.Status, &rec.Avatar, &rec.TenantId, &rec.PYInitial, &rec.PYQuanPin, &rec.Mobile, &rec.Area, &rec.Sort)
 		if err != nil {
 			glog.Error(err)
 		}
@@ -778,7 +778,7 @@ func (*device) GetOrgInfo(w http.ResponseWriter, r *http.Request) {
 	data := members{}
 	for row.Next() {
 		rec := new(member)
-		row.Scan(&rec.Uid, &rec.NickName, &rec.parentId, &rec.sort)
+		row.Scan(&rec.Uid, &rec.NickName, &rec.parentId, &rec.Sort)
 		rec.Uid = rec.Uid
 		rec.UserName = rec.Uid + ORG_SUFFIX
 		data = append(data, rec)
