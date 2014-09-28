@@ -1,10 +1,42 @@
 delimiter $$
 
+CREATE TABLE `application` (
+  `id` varchar(64) NOT NULL,
+  `name` varchar(45) DEFAULT NULL,
+  `token` varchar(45) DEFAULT NULL,
+  `type` varchar(45) DEFAULT NULL,
+  `status` int(11) DEFAULT NULL,
+  `sort` int(11) DEFAULT NULL,
+  `level` int(11) DEFAULT NULL,
+  `created` datetime DEFAULT NULL,
+  `updated` datetime DEFAULT NULL,
+  PRIMARY KEY (`id`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8$$
+
+
+delimiter $$
+
 CREATE TABLE `client` (
   `id` bigint(20) NOT NULL,
   `user_id` bigint(20) DEFAULT NULL,
   `type` varchar(45) DEFAULT NULL,
   `device_id` varchar(45) DEFAULT NULL,
+  `created` datetime DEFAULT NULL,
+  `updated` datetime DEFAULT NULL,
+  PRIMARY KEY (`id`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8$$
+
+
+delimiter $$
+
+CREATE TABLE `client_version` (
+  `id` varchar(64) NOT NULL,
+  `type` varchar(45) DEFAULT NULL,
+  `ver_code` int(11) DEFAULT NULL,
+  `ver_name` varchar(45) DEFAULT NULL,
+  `ver_description` text,
+  `download_url` varchar(255) DEFAULT NULL,
+  `file_name` varchar(45) DEFAULT NULL,
   `created` datetime DEFAULT NULL,
   `updated` datetime DEFAULT NULL,
   PRIMARY KEY (`id`)
@@ -97,6 +129,20 @@ CREATE TABLE `user` (
   `area` varchar(128) NOT NULL DEFAULT '',
   `created` datetime NOT NULL,
   `updated` datetime NOT NULL,
+  PRIMARY KEY (`id`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8$$
+
+
+delimiter $$
+
+CREATE TABLE `user_user` (
+  `id` varchar(64) NOT NULL,
+  `from_user_id` varchar(64) DEFAULT NULL,
+  `to_user_id` varchar(64) DEFAULT NULL,
+  `remark_name` varchar(45) DEFAULT NULL,
+  `sort` int(11) DEFAULT NULL,
+  `created` datetime DEFAULT NULL,
+  `updated` datetime DEFAULT NULL,
   PRIMARY KEY (`id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8$$
 
