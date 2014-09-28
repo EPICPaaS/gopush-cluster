@@ -877,13 +877,6 @@ func (*device) GetOrgInfo(w http.ResponseWriter, r *http.Request) {
 	starMemberList := getStarUser(currentUser.Uid)
 	res["starMemberCount"] = len(starMemberList)
 	res["starMemberList"] = starMemberList
-	/*
-		starMembers := make(members, 2)
-
-		starMembers[0] = &member{Uid: "11222", UserName: "11222@user", NickName: "hehe"}
-		starMembers[1] = &member{Uid: "22233", UserName: "22233@user", NickName: "haha"}
-		res["starMemberList"] = starMembers*/
-	return
 }
 
 func (*device) SearchUser(w http.ResponseWriter, r *http.Request) {
