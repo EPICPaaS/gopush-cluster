@@ -2,12 +2,13 @@ package app
 
 import (
 	"encoding/json"
-	myrpc "github.com/EPICPaaS/gopush-cluster/rpc"
-	"github.com/golang/glog"
 	"io/ioutil"
 	"net/http"
 	"strings"
 	"time"
+
+	myrpc "github.com/EPICPaaS/gopush-cluster/rpc"
+	"github.com/golang/glog"
 )
 
 // 应用端推送消息给用户.
@@ -105,9 +106,10 @@ func (*app) UserPush(w http.ResponseWriter, r *http.Request) {
 }
 
 // 客户端设备推送消息.
-// 1. 单推
-// 2. 群推（@qun）
-// 3. 组织机构推（部门 @org，单位 @tenant）
+//
+//  1. 单推
+//  2. 群推（@qun）
+//  3. 组织机构推（部门 @org，单位 @tenant）
 func (*device) Push(w http.ResponseWriter, r *http.Request) {
 	if r.Method != "POST" {
 		http.Error(w, "Method Not Allowed", 405)
